@@ -4,10 +4,14 @@ import matplotlib.pyplot as plt
 import csv
 import scipy.io
 import h5py
+from scipy import fft
+import dsp, stats, utils, viz
+
+
 
 
 class SignalHandler:
-    def __init__(self, sample_rate=1000, duration=10):
+    def __init__(self,signal=None, sample_rate=1000, duration=10):
         """
         Initialize the SignalHandler with a specific sample rate and duration.
 
@@ -17,53 +21,29 @@ class SignalHandler:
         self.sample_rate = sample_rate
         self.duration = duration
         self.time = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
-        self.signal = None
+        self.signal = signal
+        self.expectation = None
+        self.variance = None
+        self.freq = None
+        self.psd = None
 
-    def apply_low_pass_filter(self, cutoff_frequency, order=5):
-        """Apply a low-pass filter to the signal."""
-        return self._apply_filter(cutoff_frequency, 'low', order)
-
-    def apply_high_pass_filter(self, cutoff_frequency, order=5):
-        """Apply a high-pass filter to the signal."""
-        return self._apply_filter(cutoff_frequency, 'high', order)
-
-    def apply_band_pass_filter(self, low_cutoff, high_cutoff, order=5):
-        """Apply a band-pass filter to the signal."""
-        nyquist = 0.5 * self.sample_rate
-        low = low_cutoff / nyquist
-        high = high_cutoff / nyquist
-        b, a = signal.butter(order, [low, high], btype='band')
-        self.signal = signal.filtfilt(b, a, self.signal)
-        return self.signal
-
-    def _apply_filter(self, cutoff_frequency, filter_type, order):
-        """Helper method to apply filters."""
-        if self.signal is None:
+    def get_autostats(self):
+        if signal is None:
             raise ValueError("Signal is not generated yet. Please generate a signal first.")
-        nyquist = 0.5 * self.sample_rate
-        normal_cutoff = cutoff_frequency / nyquist
-        b, a = signal.butter(order, normal_cutoff, btype=filter_type, analog=False)
-        self.signal = signal.filtfilt(b, a, self.signal)
-        return self.signal
+        self.expectation = np.mean(self.signal)
+        self.variance = np.var(self.signal)
 
-    def process_signal_in_chunks(self, chunk_size):
-        """Process the signal in chunks for real-time applications."""
-        if self.signal is None:
-            raise ValueError("Signal is not generated yet. Please generate a signal first.")
-        num_chunks = len(self.signal) // chunk_size
-        for i in range(num_chunks):
-            chunk = self.signal[i*chunk_size:(i+1)*chunk_size]
-            yield chunk
+
+
+
+
 
 # dsp
-    def calculate_power_spectral_density(self):
-        """Calculate the Power Spectral Density (PSD) of the signal."""
-        if self.signal is None:
-            raise ValueError("Signal is not generated yet. Please generate a signal first.")
-        frequencies, psd = signal.welch(self.signal, self.sample_rate)
-        return frequencies, psd
+    def get_psd(self):
+        self.freq, self.psd = dsp.calculate_power_spectral_density(self.signal, self.sample_rate)
+
     
-    def calculate_fft(self):
+    def get_fft(self):
         """Calculate the Fast Fourier Transform (FFT) of the signal."""
         if self.signal is None:
             raise ValueError("Signal is not generated yet. Please generate a signal first.")
@@ -71,10 +51,9 @@ class SignalHandler:
         fft_freqs = fft.fftfreq(len(self.signal), 1/self.sample_rate)
         return fft_freqs, fft_values
 
-    def calculate_ifft(self, fft_values):
-        """Calculate the Inverse Fast Fourier Transform (IFFT) of the FFT values."""
-        signal = fft.ifft(fft_values)
-        return signal
+
+
+
 
     def apply_moving_average_filter(self, window_size=5):
         """Apply a simple moving average filter to the signal."""
@@ -89,9 +68,11 @@ class SignalHandler:
         self.signal = np.random.normal(mean, std, len(self.time))
         return self.signal
 
-    def generate_random_vibration(self, frequency=5, amplitude=1):
+    def generate_random_vibration(self, frequencies=[5,8], amplitudes= [2,1]):
         """Generate a random vibration signal."""
-        sine_wave = amplitude * np.sin(2 * np.pi * frequency * self.time)
+        sine_wave =[]
+        for amplitude, frequency in zip(amplitudes, frequencies):
+            sine_wave =sine_wave + amplitude * np.sin(2 * np.pi * frequency * self.time)
         noise = self.generate_white_noise()
         self.signal = sine_wave + noise
         return self.signal
@@ -115,39 +96,14 @@ class SignalHandler:
         self.signal = x
         return self.signal
 
-    def calculate_expectation(self):
-        """Calculate the expected value of the signal."""
-        if self.signal is None:
-            raise ValueError("Signal is not generated yet. Please generate a signal first.")
-        return np.mean(self.signal)
 
-    def calculate_covariance(self, other_signal):
-        """Calculate the covariance of the signal with another signal."""
-        if self.signal is None or other_signal is None:
-            raise ValueError("Both signals must be generated first.")
-        return np.cov(self.signal, other_signal)[0, 1]
 
-# vibs
-    def calculate_resonance_frequency(self, mass, stiffness):
-        """Calculate the resonance frequency for a single degree of freedom system."""
-        return np.sqrt(stiffness / mass) / (2 * np.pi)
 
-    def simulate_random_response(self, damping_ratio=0.05, force_amplitude=1):
-        """Simulate the response of a system to random excitation."""
-        natural_freq = self.calculate_resonance_frequency(mass=1, stiffness=1)
-        response = force_amplitude * np.sin(2 * np.pi * natural_freq * self.time) * np.exp(-damping_ratio * self.time)
-        noise = self.generate_white_noise()
-        self.signal = response + noise
-        return self.signal
 
 # stats
     def calculate_autocorrelation(self):
-        """Calculate the auto-correlation of the signal."""
-        if self.signal is None:
-            raise ValueError("Signal is not generated yet. Please generate a signal first.")
-        autocorr = np.correlate(self.signal, self.signal, mode='full')
-        autocorr = autocorr[autocorr.size // 2:]
-        return self.time[:autocorr.size], autocorr
+        time, autocorr = stats.calculate_cross_correlation(self.signal, self.time)
+        return time, autocorr
 
     def calculate_cross_correlation(self, other_signal):
         """Calculate the cross-correlation of the signal with another signal."""

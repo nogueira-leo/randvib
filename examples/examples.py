@@ -4,7 +4,7 @@ import core.signalhandler as sh
 handler = sh.SignalHandler(sample_rate=1000, duration=5)
 
 # Generate and plot a random vibration
-handler.generate_random_vibration(frequency=10, amplitude=5)
+handler.generate_random_vibration()
 handler.plot_signal()
 
 # Plot the Power Spectral Density
