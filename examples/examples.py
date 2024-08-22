@@ -19,8 +19,10 @@ handler.plot_autocorrelation()
 
 # Generate a second signal and plot cross-correlation
 handler2 = sh.SignalHandler(sample_rate=1000, duration=5)
+handler2.plot_psd()
 handler2.generate_random_vibration(frequency=15, amplitude=3)
 handler.plot_cross_correlation(handler2.signal)
+handler2.plot_cross_correlation(handler.signal)
 
 # Process the signal in chunks (simulate real-time processing)
 for chunk in handler.process_signal_in_chunks(chunk_size=100):

@@ -1,2 +1,2 @@
-# randvib
+# Random Vibration and Stochastic Processes
  
