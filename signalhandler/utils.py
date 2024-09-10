@@ -5,12 +5,7 @@ import numpy as np
 import scipy
 
 
-def normalize_signal(signal):
-    """Normalize the signal to have zero mean and unit variance."""
-    if signal is None:
-        raise ValueError("Signal is not generated yet. Please generate a signal first.")
-    signal = (signal - np.mean(signal)) / np.std(signal)
-    return signal
+
 
 
 def difference_signal(signal=None, time=None):

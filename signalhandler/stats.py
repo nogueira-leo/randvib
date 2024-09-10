@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.signal import butter, filtfilt
 from scipy.stats import kurtosis, skew
 
 def calculate_expectation(signal):
@@ -51,28 +50,9 @@ def calculate_kurtosis(signal):
     return kurtosis(signal)
 
 
-def _apply_filter(signal, sample_rate, cutoff_frequency, filter_type, order):
-    """Helper method to apply filters."""
-    if signal is None:
-        raise ValueError("Signal is not generated yet. Please generate a signal first.")
-    nyquist = 0.5 * sample_rate
-    normal_cutoff = cutoff_frequency / nyquist
-    b, a = butter(order, normal_cutoff, btype=filter_type, output='ba', fs=sample_rate)
 
-    signal = filtfilt(b, a, signal)
-    return signal
 
-def process_in_chunks(signal=None, chunk_size=None):
-    """Process the signal in chunks for real-time applications.
-    :param chunk_size:
-    :param signal:
-    """
-    if signal is None:
-        raise ValueError("Signal is not generated yet. Please generate a signal first.")
-    num_chunks = len(signal) // chunk_size
-    for i in range(num_chunks):
-        chunk = signal[i*chunk_size:(i+1)*chunk_size]
-        yield chunk
+
 
 
 
