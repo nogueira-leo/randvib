@@ -7,34 +7,42 @@ import SHELL4 as fems4
 import SOLVE as solv
 import MESH as msh
 from VTK_FUNCS import vtk_write_displacement, vtk_write_modal, vtk_write_velocity
-# MMA
-#from __future__ import division
 from joblib import Parallel, delayed
-from typing import Tuple
-import os
+import pandas as pd
+
 #%%
 if __name__ == "__main__":
     
+    # Read the CSV file into a pandas DataFrame
+    df = pd.read_csv('corcos_vel.csv')
+    # Accessing columns
+    f_0 = df['f0'].values
+    f_1 = df['f1'].values
+    f_2 = df['f2'].values
+    Gvv_0 = df['Gvv0'].values
+    Gvv_1 = df['Gvv1'].values
+    Gvv_2 = df['Gvv2'].values
+    #%%
     ############# ATENÇÃO!!! EXEMPLO ADAPTADO PARA O CASO ESTÁTICO!!! #################
     ############### MATERIAL, AMORTECIMENTO E ESPESSURA GLOBAL (SI) ####################
     E = 200e9
-    rho = 7850
+    rho = 8000
     v = 0.3
     alpha_x = 0.11
     alpha_y = 0.70
-    rho_air = 1.18
-    v_air = 1.48e-5
-    d_ = 0.0024
+    rho_air = 1.201
+    v_air = 1.33e-5
+    d_ = 0.0024 
     # Proportinal damping
     alpha = 0
     beta = 1e-6
     # Espessura
     h_init = 0.0159
     eta = 0.05
-    U0 = 89.7
+    U0 = 89.4
     Re_d = 8 * U0*d_/v_air
-    tau_w = 0.0225 * rho_air * U0**2/Re_d
-    D = E * h_init**3/(12*(1-v**2))
+    tau_w = 0.0225 * rho_air * U0**2/Re_d**0.25
+    
     c0 = 343
     #%%
     #################### MALHA QUAD4 RETANGULO ##################################
@@ -81,21 +89,19 @@ if __name__ == "__main__":
     stif_matrix, mass_matrix = fems4.stif_mass_matrices(coord, connect, nnode, nel, ind_rows, ind_cols, E, v, rho, h)
     
     ################### ANÁLISE MODAL ###############################
-    modes = 50
+    modes = 10
     modal_shape = np.zeros((5*nnode,modes))
     natural_frequencies, modal_shape[free_dofs,:] = solv.modal_analysis(stif_matrix[free_dofs, :][:, free_dofs], mass_matrix[free_dofs, :][:, free_dofs], modes, which='LM', sigma=0.01)
     print('Frequências Naturais:')
     print(natural_frequencies)
     # %%
-    freq = np.linspace(10,2000,200)
+    freq = np.linspace(50,2000,200)
     Vr = modal_shape[z_dofs,:]  # Modos normais
     wn = 2 * np.pi * natural_frequencies  # Frequências naturais (rad/s)
-    glf = int(check_node)  # Grau de liberdade da força
+    glf = check_node[0]  # Grau de liberdade da força
     w = 2 * np.pi * freq  # Frequências angulares
 
-    # Inicializando as FRFs
-    Rp_m = np.zeros(len(freq), dtype=complex)
-    Hu = np.zeros((len(z_dofs), len(freq)), dtype=complex)
+    # Inicializando as FRFs    
     Hv = np.zeros((len(z_dofs), len(freq)), dtype=complex)
     
     # Pré-calculando termos repetidos para otimização
@@ -107,14 +113,10 @@ if __name__ == "__main__":
         # Pré-calculando para cada grau de liberdade de resposta
         for k in range(modes):
             # Cálculo vetorizado para todas as frequências de uma vez
-            den = (1)/ (wn2[k] - w**2 + 1j * eta_wn2[k])
-                        
+            den = (1j * w)/ (wn2[k] - w**2 + 1j * eta_wn2[k])
             # FRF pontual (mesmo ponto de força)
-            Rp_m += (Vr[glf, k]**2) * den
             
-            # FRF de transferência (resposta em outro ponto)
-            Hu[glr, :] += Vr[glr, k] * Vr[glf, k] * den
-            Hv[glr, :] += Vr[glr, k] * Vr[glf, k] * den * 1j * w
+            Hv[glr, :] += Vr[glr, k] * Vr[glf, k] * den
 
     # %%
     # Função paralelizada que será aplicada em cada frequência
@@ -128,49 +130,62 @@ if __name__ == "__main__":
         complex_exp = np.exp(1j * w * ksix / Uc)  # Parte exponencial complexa
 
         Gamma = (1 + alpha_x * ksix_Uc) * exp_x * complex_exp * exp_y
-        Gxx = (Aij * phi_pp * Gamma * Aij)
-        ## TODO: export force/pressure instead of Gamma
-        # Retornar o valor de Gamma para essa frequência
-        return Gamma, kk
+        Gxx = (phi_pp * Gamma * Aij**2)
+        
+        
+        return Gxx, kk
     
     # Pré-computando constantes fora dos loops
-    f = freq
-    Gf = np.zeros((nnode, f.size), dtype=np.complex64)
-    Gamma_w = np.zeros((nnode, nnode, f.size), dtype=np.complex64)
-
-    w_array = 2 * np.pi * f  # Frequências angulares
+    w_array = 2 * np.pi * freq  # Frequências angulares
     Uc_array = U0 * (0.59 + 0.30 * np.exp(-0.89 * w_array * d_ / U0))  # Precomputando Uc para todas as frequências
     phi_pp_array = np.array((tau_w**2 * d_ / U0) * (5.1 / (1 + 0.44 * (w_array * d_ / U0)**(7/3))), ndmin=1)
 
     # Diferenças de coordenadas
     ksix = coord[:, None, 0] - coord[None, :, 0]  # Diferenças em x
     ksiy = coord[:, None, 1] - coord[None, :, 1]  # Diferenças em y
-    Aij = (tamanho_elemento / 2)**2  # Precomputando Aij fora do loop
+    Aij = (tamanho_elemento/4)**2  # Precomputando Aij fora do loop
 
     # Usando joblib para paralelizar o loop sobre frequências
     results = Parallel(n_jobs=-1)(delayed(compute_force)(
         kk, w, phi_pp, Uc, ksix, ksiy, alpha_x, alpha_y, Aij) for kk, (w, phi_pp, Uc) in enumerate(zip(w_array, phi_pp_array, Uc_array)))
 
-    # Atualizando Gamma_w com os resultados paralelizados
-    for Gamma, kk in results:
-        Gamma_w[:, :, kk] = Gamma
-    #%%
-    H1 = np.ones((nnode,1))
 
-
-    Guu = np.zeros(len(freq), dtype=complex)   
-    Gvv = np.zeros(len(freq), dtype=complex)   
-       
-    for ii in range(len(freq)):
-
-        Guu[ii] = np.conj(Hu[:,ii]).T@(phi_pp_array[ii]*Gamma_w[:,:,ii])@Hu[:,ii]
-        Gvv[ii] = np.conj(Hv[:,ii]).T@(Aij*phi_pp_array[ii]*Gamma_w[:,:,ii]*Aij)@Hv[:,ii]
+    	
+    #%% Atualizando Gamma_w com os resultados paralelizados
+    Gxx_w = np.zeros((nnode,nnode,len(freq)), dtype=complex)   
+    for Gxx, kk in results:
+        Gxx_w[:,:,kk] = Gxx
         
     #%%
-    plt.plot(freq, np.log10(abs(np.sqrt(Gvv))))
+    Gvv = np.zeros(len(freq), dtype=complex)
+    Gv = np.zeros(len(freq), dtype=complex)
+    H1 = np.ones_like(Hv)   
+    
+    
+    for ii in range(len(freq)):
+        Gvv[ii] = np.conj(Hv[:,ii].T)@(Gxx_w[:,:,ii])@Hv[:,ii]
+        Gv[ii] = np.conj(H1[:,ii].T)@(Gxx_w[:,:,ii])@H1[:,ii]
+
+       
+        
+        
+        
+    #%%
+    
+    plt.semilogy(freq,(np.abs(Gvv)))
+    #plt.semilogy(freq,(np.abs(Gv*np.sum(np.abs(Hv), axis=0))))
+    #plt.semilogy(f_0, (np.abs(Gvv_0)))
+    plt.semilogy(f_1, (np.abs(Gvv_1)))
+    #plt.semilogy(f_2, (np.abs(Gvv_2)))
+    
+    #plt.plot(freq, np.log10(abs((Guu))))
+    #plt.plot(freq, np.log10(abs((Gxx))))
     #plt.semilogy(freq, abs(Guu))
-    plt.grid(True)
-    plt.ylim(-20, -10)
+    plt.grid(True, which='major')
+    #plt.ylim(-19, -9)
     #plt.xlim(0,600)
     
-    # %%    
+
+
+
+
