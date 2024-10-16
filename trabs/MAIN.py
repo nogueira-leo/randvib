@@ -29,9 +29,9 @@ if __name__ == "__main__":
     rho = 8000
     v = 0.3
     alpha_x = 0.11
-    alpha_y = 0.70
-    rho_air = 1.201
-    v_air = 1.33e-5
+    alpha_y = 0.7
+    rho_air = 4.73
+    v_air = 18.5e-6/rho_air
     d_ = 0.0024 
     # Proportinal damping
     alpha = 0
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # Espessura
     h_init = 0.0159
     eta = 0.05
-    U0 = 89.4
+    U0 = 89.7
     Re_d = 8 * U0*d_/v_air
     tau_w = 0.0225 * rho_air * U0**2/Re_d**0.25
     
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     lx = 0.47 # Comprimento
     ly = 0.37 # Altura
 
-    tamanho_elemento = 0.01
+    tamanho_elemento = 0.02
     coord, connect, nodes_faceX1, nodes_faceX2, nodes_faceY1, nodes_faceY2, nodes_middle = msh.malha2D_QUAD4(lx,ly,tamanho_elemento)
     nnode = len(coord)
     nel = len(connect)
@@ -143,10 +143,11 @@ if __name__ == "__main__":
     # Diferenças de coordenadas
     ksix = coord[:, None, 0] - coord[None, :, 0]  # Diferenças em x
     ksiy = coord[:, None, 1] - coord[None, :, 1]  # Diferenças em y
-    Aij = (tamanho_elemento/4)**2  # Precomputando Aij fora do loop
+    Aij = (tamanho_elemento)**2  # Precomputando Aij fora do loop
+    Aij = 0.47*0.37/nel  # Precomputando Aij fora do loop
 
     # Usando joblib para paralelizar o loop sobre frequências
-    results = Parallel(n_jobs=-1)(delayed(compute_force)(
+    results = Parallel(n_jobs=-2)(delayed(compute_force)(
         kk, w, phi_pp, Uc, ksix, ksiy, alpha_x, alpha_y, Aij) for kk, (w, phi_pp, Uc) in enumerate(zip(w_array, phi_pp_array, Uc_array)))
 
 
@@ -182,7 +183,7 @@ if __name__ == "__main__":
     #plt.plot(freq, np.log10(abs((Gxx))))
     #plt.semilogy(freq, abs(Guu))
     plt.grid(True, which='major')
-    #plt.ylim(-19, -9)
+    plt.ylim(-19, -9)
     #plt.xlim(0,600)
     
 
