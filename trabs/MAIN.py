@@ -9,6 +9,8 @@ import MESH as msh
 from VTK_FUNCS import vtk_write_displacement, vtk_write_modal, vtk_write_velocity
 from joblib import Parallel, delayed
 import pandas as pd
+import matplotlib
+matplotlib.use('qtagg')
 
 #%%
 if __name__ == "__main__":
@@ -25,13 +27,13 @@ if __name__ == "__main__":
     #%%
     ############# ATENÇÃO!!! EXEMPLO ADAPTADO PARA O CASO ESTÁTICO!!! #################
     ############### MATERIAL, AMORTECIMENTO E ESPESSURA GLOBAL (SI) ####################
-    E = 200e9
+    E = 210e9
     rho = 8000
     v = 0.3
     alpha_x = 0.11
     alpha_y = 0.7
-    rho_air = 4.73
-    v_air = 18.5e-6/rho_air
+    rho_air =  1.1845
+    v_air = 1.8444e-5
     d_ = 0.0024 
     # Proportinal damping
     alpha = 0
@@ -39,9 +41,9 @@ if __name__ == "__main__":
     # Espessura
     h_init = 0.0159
     eta = 0.05
-    U0 = 89.7
+    U0 = 89.4
     Re_d = 8 * U0*d_/v_air
-    tau_w = 0.0225 * rho_air * U0**2/Re_d**0.25
+    tau_w = (0.0225 * rho_air * U0**2)/(Re_d**0.25)
     
     c0 = 343
     #%%
@@ -130,7 +132,7 @@ if __name__ == "__main__":
         complex_exp = np.exp(1j * w * ksix / Uc)  # Parte exponencial complexa
 
         Gamma = (1 + alpha_x * ksix_Uc) * exp_x * complex_exp * exp_y
-        Gxx = (phi_pp * Gamma * Aij**2)
+        Gxx = (phi_pp * Gamma * Aij)
         
         
         return Gxx, kk
@@ -183,10 +185,14 @@ if __name__ == "__main__":
     #plt.plot(freq, np.log10(abs((Gxx))))
     #plt.semilogy(freq, abs(Guu))
     plt.grid(True, which='major')
-    plt.ylim(-19, -9)
+    plt.ylim(1e-19, 1e-9)
     #plt.xlim(0,600)
+
+    plt.show()
     
 
 
 
 
+
+# %%

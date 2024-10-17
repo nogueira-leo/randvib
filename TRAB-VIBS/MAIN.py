@@ -83,7 +83,7 @@ if __name__ == "__main__":
     stif_matrix, mass_matrix = fems4.stif_mass_matrices(coord, connect, nnode, nel, ind_rows, ind_cols, E, v, rho, h)
     
     ################### ANÁLISE MODAL ###############################
-    modes = 50
+    modes = 15
     modal_shape = np.zeros((5*nnode,modes))
     natural_frequencies, modal_shape[free_dofs,:] = solv.modal_analysis(stif_matrix[free_dofs, :][:, free_dofs], mass_matrix[free_dofs, :][:, free_dofs], modes, which='LM', sigma=0.01)
     print('Frequências Naturais:')
