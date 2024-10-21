@@ -1,6 +1,6 @@
 # %% imports
 import numpy as np
-import scipy
+
 from scipy.fft import fftn, fft
 import matplotlib.pyplot as plt
 import SHELL4 as fems4
@@ -10,6 +10,7 @@ from VTK_FUNCS import vtk_write_displacement, vtk_write_modal, vtk_write_velocit
 from joblib import Parallel, delayed
 import pandas as pd
 import matplotlib
+from numpy.linalg import norm
 matplotlib.use('qtagg')
 
 #%%
@@ -27,8 +28,8 @@ if __name__ == "__main__":
     #%%
     ############# ATENÇÃO!!! EXEMPLO ADAPTADO PARA O CASO ESTÁTICO!!! #################
     ############### MATERIAL, AMORTECIMENTO E ESPESSURA GLOBAL (SI) ####################
-    E = 210e9
-    rho = 8000
+    E = 200e9
+    rho = 7850
     v = 0.3
     alpha_x = 0.11
     alpha_y = 0.7
@@ -41,7 +42,7 @@ if __name__ == "__main__":
     # Espessura
     h_init = 0.0159
     eta = 0.05
-    U0 = 89.4
+    U0 = 178.8
     Re_d = 8 * U0*d_/v_air
     tau_w = (0.0225 * rho_air * U0**2)/(Re_d**0.25)
     
@@ -91,7 +92,7 @@ if __name__ == "__main__":
     stif_matrix, mass_matrix = fems4.stif_mass_matrices(coord, connect, nnode, nel, ind_rows, ind_cols, E, v, rho, h)
     
     ################### ANÁLISE MODAL ###############################
-    modes = 10
+    modes = 30
     modal_shape = np.zeros((5*nnode,modes))
     natural_frequencies, modal_shape[free_dofs,:] = solv.modal_analysis(stif_matrix[free_dofs, :][:, free_dofs], mass_matrix[free_dofs, :][:, free_dofs], modes, which='LM', sigma=0.01)
     print('Frequências Naturais:')
@@ -132,7 +133,7 @@ if __name__ == "__main__":
         complex_exp = np.exp(1j * w * ksix / Uc)  # Parte exponencial complexa
 
         Gamma = (1 + alpha_x * ksix_Uc) * exp_x * complex_exp * exp_y
-        Gxx = (phi_pp * Gamma * Aij)
+        Gxx = (2*phi_pp * Gamma * Aij)
         
         
         return Gxx, kk
@@ -170,16 +171,56 @@ if __name__ == "__main__":
         Gv[ii] = np.conj(H1[:,ii].T)@(Gxx_w[:,:,ii])@H1[:,ii]
 
        
-        
-        
-        
     #%%
+    # Function to compute phi_pb for a specific frequency index kk
+    def compute_phi_pb_for_frequency(kk, w, coord, c0, nnode):
+        k0 = w / c0
+        phi_pb_kk = np.zeros((nnode, nnode), dtype=complex)  # For storing results of phi_pb for this frequency
+        for ii, x1 in enumerate(coord):
+            for jj, x2 in enumerate(coord):
+                if ii != jj:
+                    distance = norm(abs(x1 - x2))
+                    phi_pb_kk[ii, jj] = np.sin(k0 * distance) / (k0 * distance)
+                else:
+                    phi_pb_kk[ii, jj] = 1  # Special case when ii == jj
+        return phi_pb_kk, kk
+
+    # Function to compute G_vv for a specific frequency index ii
+    def compute_G_vv(ii, Sp_w, phi_pb, Hv):
+        return np.conj(Hv[:, ii].T) @ (Sp_w[ii] * phi_pb[:, :, ii]) @ Hv[:, ii]
+
     
+    # Preallocate arrays
+    Sp_w = np.ones((len(w_array)), dtype=complex) * 2*1e-6
+    phi_pb = np.zeros((nnode, nnode, len(w_array)), dtype=complex)
+
+    # Parallel computation of phi_pb using joblib
+    phi_pb_results = Parallel(n_jobs=-1)(delayed(compute_phi_pb_for_frequency)(
+        kk, w, coord, c0, nnode) for kk, w in enumerate(w_array))
+
+    # Combine the results back into phi_pb
+    for phi_pb_kk, kk in phi_pb_results:
+        phi_pb[:, :, kk] = phi_pb_kk
+
+    # Preallocate G_vv
+    G_vv = np.zeros(len(w_array), dtype=complex)
+    for ii in range(len(freq)):
+        G_vv[ii] = np.conj(Hv[:,ii].T)@(Sp_w[ii]*phi_pb[:,:,ii])@Hv[:,ii]
+    ## Parallel computation of G_vv using joblib
+    #G_vv_results = Parallel(n_jobs=-2)(delayed(compute_G_vv)(
+    #    ii, Sp_w, phi_pb, Hv) for ii in range(len(w_array)))
+    ## Store the results back into G_vv
+    #for ii, G_vv_val in enumerate(G_vv_results):
+    #    G_vv[ii] = G_vv_val
+#
+    # %%
+
     plt.semilogy(freq,(np.abs(Gvv)))
+    plt.semilogy(freq,(np.abs(G_vv)))
     #plt.semilogy(freq,(np.abs(Gv*np.sum(np.abs(Hv), axis=0))))
     #plt.semilogy(f_0, (np.abs(Gvv_0)))
-    plt.semilogy(f_1, (np.abs(Gvv_1)))
-    #plt.semilogy(f_2, (np.abs(Gvv_2)))
+    #plt.semilogy(f_1, (np.abs(Gvv_1)))
+    plt.semilogy(f_2, (np.abs(Gvv_2)))
     
     #plt.plot(freq, np.log10(abs((Guu))))
     #plt.plot(freq, np.log10(abs((Gxx))))
@@ -188,11 +229,5 @@ if __name__ == "__main__":
     plt.ylim(1e-19, 1e-9)
     #plt.xlim(0,600)
 
-    plt.show()
-    
-
-
-
-
-
+    plt.show()    
 # %%
