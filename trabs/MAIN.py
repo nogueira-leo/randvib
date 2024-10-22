@@ -1,19 +1,20 @@
 # %% imports
 import numpy as np
 
-from scipy.fft import fftn, fft
 import matplotlib.pyplot as plt
 import SHELL4 as fems4
 import SOLVE as solv
 import MESH as msh
-from VTK_FUNCS import vtk_write_displacement, vtk_write_modal, vtk_write_velocity
+
 from joblib import Parallel, delayed
 import pandas as pd
 import matplotlib
 from numpy.linalg import norm
 matplotlib.use('qtagg')
 
-#%%
+# %%
+#  
+
 if __name__ == "__main__":
     
     # Read the CSV file into a pandas DataFrame
@@ -26,8 +27,7 @@ if __name__ == "__main__":
     Gvv_1 = df['Gvv1'].values
     Gvv_2 = df['Gvv2'].values
     #%%
-    ############# ATENÇÃO!!! EXEMPLO ADAPTADO PARA O CASO ESTÁTICO!!! #################
-    ############### MATERIAL, AMORTECIMENTO E ESPESSURA GLOBAL (SI) ####################
+    # Propriedades
     E = 200e9
     rho = 7850
     v = 0.3
@@ -45,7 +45,6 @@ if __name__ == "__main__":
     U0 = 178.8
     Re_d = 8 * U0*d_/v_air
     tau_w = (0.0225 * rho_air * U0**2)/(Re_d**0.25)
-    
     c0 = 343
     #%%
     #################### MALHA QUAD4 RETANGULO ##################################
@@ -121,27 +120,23 @@ if __name__ == "__main__":
             
             Hv[glr, :] += Vr[glr, k] * Vr[glf, k] * den
 
-    # %%
+    #%% 
     # Função paralelizada que será aplicada em cada frequência
-    def compute_force(kk, w, phi_pp, Uc, ksix, ksiy, alpha_x, alpha_y, Aij):
+    def compute_Gamma_TBL(kk, w, Uc, ksix, ksiy, alpha_x, alpha_y, Aij):
         ksix_Uc = np.abs(w * ksix / Uc)
         ksiy_Uc = np.abs(w * ksiy / Uc)
-
         # Precomputando o termo Gamma
         exp_x = np.exp(-alpha_x * ksix_Uc)  # Parte exponencial para ksix
         exp_y = np.exp(-alpha_y * ksiy_Uc)  # Parte exponencial para ksiy
         complex_exp = np.exp(1j * w * ksix / Uc)  # Parte exponencial complexa
 
         Gamma = (1 + alpha_x * ksix_Uc) * exp_x * complex_exp * exp_y
-        Gxx = (2*phi_pp * Gamma * Aij)
-        
-        
-        return Gxx, kk
+        return Gamma, kk
     
     # Pré-computando constantes fora dos loops
     w_array = 2 * np.pi * freq  # Frequências angulares
     Uc_array = U0 * (0.59 + 0.30 * np.exp(-0.89 * w_array * d_ / U0))  # Precomputando Uc para todas as frequências
-    phi_pp_array = np.array((tau_w**2 * d_ / U0) * (5.1 / (1 + 0.44 * (w_array * d_ / U0)**(7/3))), ndmin=1)
+    phi_pp_TBL = np.array((tau_w**2 * d_ / U0) * (5.1 / (1 + 0.44 * (w_array * d_ / U0)**(7/3))), ndmin=1)
 
     # Diferenças de coordenadas
     ksix = coord[:, None, 0] - coord[None, :, 0]  # Diferenças em x
@@ -150,74 +145,52 @@ if __name__ == "__main__":
     Aij = 0.47*0.37/nel  # Precomputando Aij fora do loop
 
     # Usando joblib para paralelizar o loop sobre frequências
-    results = Parallel(n_jobs=-2)(delayed(compute_force)(
-        kk, w, phi_pp, Uc, ksix, ksiy, alpha_x, alpha_y, Aij) for kk, (w, phi_pp, Uc) in enumerate(zip(w_array, phi_pp_array, Uc_array)))
+    results_TBL = Parallel(n_jobs=-2)(delayed(compute_Gamma_TBL)(
+        kk, w, Uc, ksix, ksiy, alpha_x, alpha_y, Aij) for kk, (w,  Uc) in enumerate(zip(w_array, Uc_array)))
 
+    # Atualizando Gamma_w com os resultados paralelizados
+    Gamma_TBL = np.zeros((nnode,nnode,len(freq)), dtype=complex)   
+    for Gamma, kk in results_TBL:
+        Gamma_TBL[:,:,kk] = Gamma
 
-    	
-    #%% Atualizando Gamma_w com os resultados paralelizados
-    Gxx_w = np.zeros((nnode,nnode,len(freq)), dtype=complex)   
-    for Gxx, kk in results:
-        Gxx_w[:,:,kk] = Gxx
-        
-    #%%
-    Gvv = np.zeros(len(freq), dtype=complex)
-    Gv = np.zeros(len(freq), dtype=complex)
-    H1 = np.ones_like(Hv)   
-    
-    
-    for ii in range(len(freq)):
-        Gvv[ii] = np.conj(Hv[:,ii].T)@(Gxx_w[:,:,ii])@Hv[:,ii]
-        Gv[ii] = np.conj(H1[:,ii].T)@(Gxx_w[:,:,ii])@H1[:,ii]
-
-       
-    #%%
+    # %%
     # Function to compute phi_pb for a specific frequency index kk
-    def compute_phi_pb_for_frequency(kk, w, coord, c0, nnode):
+    def compute_Gamma_DAF(kk, w, coord, c0, nnode):
         k0 = w / c0
-        phi_pb_kk = np.zeros((nnode, nnode), dtype=complex)  # For storing results of phi_pb for this frequency
+        Gamma = np.zeros((nnode, nnode), dtype=complex)  # For storing results of phi_pb for this frequency
         for ii, x1 in enumerate(coord):
             for jj, x2 in enumerate(coord):
                 if ii != jj:
                     distance = norm(abs(x1 - x2))
-                    phi_pb_kk[ii, jj] = np.sin(k0 * distance) / (k0 * distance)
+                    Gamma[ii, jj] = np.sin(k0 * distance) / (k0 * distance)
                 else:
-                    phi_pb_kk[ii, jj] = 1  # Special case when ii == jj
-        return phi_pb_kk, kk
+                    Gamma[ii, jj] = 1  # Evitar divisão por zero
+        return Gamma, kk
 
-    # Function to compute G_vv for a specific frequency index ii
-    def compute_G_vv(ii, Sp_w, phi_pb, Hv):
-        return np.conj(Hv[:, ii].T) @ (Sp_w[ii] * phi_pb[:, :, ii]) @ Hv[:, ii]
-
-    
     # Preallocate arrays
-    Sp_w = np.ones((len(w_array)), dtype=complex) * 2*1e-6
-    phi_pb = np.zeros((nnode, nnode, len(w_array)), dtype=complex)
+    Gamma_DAF = np.zeros((nnode, nnode, len(w_array)), dtype=complex)
 
     # Parallel computation of phi_pb using joblib
-    phi_pb_results = Parallel(n_jobs=-1)(delayed(compute_phi_pb_for_frequency)(
+    results_DAF = Parallel(n_jobs=-1)(delayed(compute_Gamma_DAF)(
         kk, w, coord, c0, nnode) for kk, w in enumerate(w_array))
 
     # Combine the results back into phi_pb
-    for phi_pb_kk, kk in phi_pb_results:
-        phi_pb[:, :, kk] = phi_pb_kk
-
-    # Preallocate G_vv
-    G_vv = np.zeros(len(w_array), dtype=complex)
+    for Gamma, kk in results_DAF:
+        Gamma_DAF[:, :, kk] = Gamma
+    #%% 
+    Gvv_TBL = np.zeros(len(freq), dtype=complex)
+    Gvv_DAF = np.zeros(len(freq), dtype=complex)
+        
     for ii in range(len(freq)):
-        G_vv[ii] = np.conj(Hv[:,ii].T)@(Sp_w[ii]*phi_pb[:,:,ii])@Hv[:,ii]
-    ## Parallel computation of G_vv using joblib
-    #G_vv_results = Parallel(n_jobs=-2)(delayed(compute_G_vv)(
-    #    ii, Sp_w, phi_pb, Hv) for ii in range(len(w_array)))
-    ## Store the results back into G_vv
-    #for ii, G_vv_val in enumerate(G_vv_results):
-    #    G_vv[ii] = G_vv_val
-#
+        Gvv_TBL[ii] = np.conj(Hv[:,ii].T)@(phi_pp_TBL[ii]*Gamma_TBL[:,:,ii])@Hv[:,ii]
+        Gvv_DAF[ii] = np.conj(Hv[:,ii].T)@(phi_pp_TBL[ii]*Gamma_DAF[:,:,ii])@Hv[:,ii]
+        
     # %%
 
-    plt.semilogy(freq,(np.abs(Gvv)))
-    plt.semilogy(freq,(np.abs(G_vv)))
-    #plt.semilogy(freq,(np.abs(Gv*np.sum(np.abs(Hv), axis=0))))
+    plt.semilogy(freq,(np.abs(Gvv_TBL)))
+    plt.semilogy(freq,(np.abs(Gvv_DAF)))
+
+    
     #plt.semilogy(f_0, (np.abs(Gvv_0)))
     #plt.semilogy(f_1, (np.abs(Gvv_1)))
     plt.semilogy(f_2, (np.abs(Gvv_2)))
@@ -226,7 +199,7 @@ if __name__ == "__main__":
     #plt.plot(freq, np.log10(abs((Gxx))))
     #plt.semilogy(freq, abs(Guu))
     plt.grid(True, which='major')
-    plt.ylim(1e-19, 1e-9)
+    #plt.ylim(1e-19, 1e-9)
     #plt.xlim(0,600)
 
     plt.show()    
