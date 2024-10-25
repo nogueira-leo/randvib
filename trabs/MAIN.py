@@ -120,8 +120,7 @@ if __name__ == "__main__":
             for k in range(modes):
                 # Cálculo vetorizado para todas as frequências de uma vez
                 den = (1j * w)/ (wn2[k] - w**2 + 1j * eta_wn2[k])
-                # FRF pontual (mesmo ponto de força)
-                
+                # FRF pontual (mesmo ponto de força)                
                 Hv[glr, :] += Vr[glr, k] * Vr[glf, k] * den
 
         
@@ -187,10 +186,15 @@ if __name__ == "__main__":
              
             Gvv_TBL = np.zeros(len(freq), dtype=complex)
             Gvv_DAF = np.zeros(len(freq), dtype=complex)
-                
+            Gpp_TBL = np.zeros_like(Gamma_DAF, dtype=complex)
+            Gpp_DAF = np.zeros_like(Gamma_DAF, dtype=complex)
+
+            
             for ii in range(len(freq)):
                 Gvv_TBL[ii] = np.conj(Hv[:,ii].T)@(phi_pp[ii]*Gamma_TBL[:,:,ii])@Hv[:,ii]
                 Gvv_DAF[ii] = np.conj(Hv[:,ii].T)@(phi_pp[ii]*Gamma_DAF[:,:,ii])@Hv[:,ii]
+                Gpp_TBL[:,:,ii] = phi_pp[ii]*Gamma_TBL[:,:,ii]
+                Gpp_DAF[:,:,ii] = phi_pp[ii]*Gamma_DAF[:,:,ii]
                 
             
 
@@ -227,12 +231,12 @@ if __name__ == "__main__":
     ii, jj = (1, 0)
     # %%
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"Densidade de Auto Espectro - $\eta={eta[1]}$")
+    plt.title(rf"Densidade de Auto Espectro - $ \eta={eta[1]}$")
     plt.plot(10*np.log10(np.abs(psd[f'psd_{ii}_{0}']/2e-5**2)),'k')
     plt.plot(10*np.log10(np.abs(psd[f'psd_{ii}_{1}']/2e-5**2)),'--k')
     plt.plot(10*np.log10(np.abs(psd[f'psd_{ii}_{2}']/2e-5**2)),':k')
     plt.xlabel("Frequência [Hz]")
-    plt.ylabel("PSD $(dB - ref 20 \mu Pa)$")
+    plt.ylabel("PSD $(dB - ref\ 20 \mu Pa)$")
     plt.legend(U0)
     #plt.ylim(84.55,84.60)
     plt.grid(True, which='both')
@@ -243,13 +247,13 @@ if __name__ == "__main__":
     # %%
 
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"Densidade Espectral Crusada X(0.15,0.12) - $\eta={eta[1]}$")
-    plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{0}']/1e-9**2)), 'r')
-    plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
-    plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{2}']/1e-9**2)), ':r')
-    #plt.plot(10*np.log10(np.abs(csd[f'DAF_{1}_{0}']/1e-9**2)), 'b')
-    #plt.plot(10*np.log10(np.abs(csd[f'DAF_{1}_{1}']/1e-9**2)), '--b')
-    #plt.plot(10*np.log10(np.abs(csd[f'DAF_{1}_{2}']/1e-9**2)), ':b')
+    plt.title(rf"Densidade Espectral Crusada X(0.15,0.12) - $\eta={eta[2]}$")
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{2}_{0}']/1e-9**2)), 'r')
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{2}_{1}']/1e-9**2)), '--r')
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{2}_{2}']/1e-9**2)), ':r')
+    plt.plot(10*np.log10(np.abs(csd[f'DAF_{2}_{0}']/1e-9**2)), 'b')
+    plt.plot(10*np.log10(np.abs(csd[f'DAF_{2}_{1}']/1e-9**2)), '--b')
+    plt.plot(10*np.log10(np.abs(csd[f'DAF_{2}_{2}']/1e-9**2)), ':b')
     plt.xlabel("Frequência (Hz)")
     plt.ylabel("CSD (dB ref $1nm$) ")
     plt.legend([f"TBL - $U_0 = {U0[0]} m/s$",
@@ -259,5 +263,65 @@ if __name__ == "__main__":
                 f"DAF - $U_0 = {U0[1]} m/s$",
                 f"DAF - $U_0 = {U0[2]} m/s$"])
     plt.grid(True, which='both')
+    plt.show()
+    # %% 
+    plt.figure(figsize=(16,9), dpi=200, layout='tight')
+    plt.title(rf"Densidade Espectral Crusada X(0.15,0.12) - $U_0={U0[1]} m/s$")
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{0}_{1}']/1e-9**2)), 'r')
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{2}_{1}']/1e-9**2)), ':r')
+    plt.plot(10*np.log10(np.abs(csd[f'DAF_{0}_{1}']/1e-9**2)), 'b')
+    plt.plot(10*np.log10(np.abs(csd[f'DAF_{1}_{1}']/1e-9**2)), '--b')
+    plt.plot(10*np.log10(np.abs(csd[f'DAF_{2}_{1}']/1e-9**2)), ':b')
+    plt.xlabel("Frequência (Hz)")
+    plt.ylabel("CSD (dB ref $1nm$) ")
+    plt.legend([f"TBL - $\eta = {eta[0]}$",
+                f"TBL - $\eta = {eta[1]}$",
+                f"TBL - $\eta = {eta[2]}$",
+                f"DAF - $\eta = {eta[0]}$",
+                f"DAF - $\eta = {eta[1]}$",
+                f"DAF - $\eta = {eta[2]}$"])
+    plt.grid(True, which='both')
+    plt.show()
+
+    # %%
+    plt.figure(figsize=(16,9), dpi=200, layout='tight')
+    plt.title(rf"Densidade Espectral Crusada X(0.15,0.12) - $\eta={eta[1]}$")
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{}_{0}']/1e-9**2)), 'r')
+
+
+    # %%
+
+    Gvvw_TBL = Gamma_TBL[check_node[0],:,:].T
+    Gvvw_DAF = Gamma_DAF[check_node[0],:,:].T
+    Gppw_TBL = Gpp_TBL[check_node[0],:,:].T
+    Gppw_DAF = Gpp_DAF[check_node[0],:,:].T
+    plt.figure(figsize=(16,9), dpi=200, layout='tight')
+    plt.imshow(np.abs(Gvvw_TBL), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
+    plt.title(rf"Coerência Espacial do Nó ${check_node[0]}$ - TBL")
+    plt.xlabel('Id do Nó')
+    plt.ylabel('Frequência (Hz)')
+    plt.colorbar()
+    plt.show()
+    plt.figure(figsize=(16,9), dpi=200, layout='tight')
+    plt.imshow(np.abs(Gvvw_DAF), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
+    plt.title(rf"Coerência Espacial do Nó ${check_node[0]}$ - DAF")
+    plt.xlabel('Id do Nó')
+    plt.ylabel('Frequência (Hz)')
+    plt.colorbar()
+    plt.show()
+    plt.figure(figsize=(16,9), dpi=200, layout='tight')
+    plt.imshow(np.abs(Gppw_TBL), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
+    plt.title(rf"Densidade Espectral Cruzada do Nó ${check_node[0]}$ - TBL")
+    plt.xlabel('Id do Nó')
+    plt.ylabel('Frequência (Hz)')
+    plt.colorbar()
+    plt.show()
+    plt.figure(figsize=(16,9), dpi=200, layout='tight')
+    plt.imshow(np.abs(Gppw_DAF), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
+    plt.title(rf"Densidade Espectral Cruzada do Nó ${check_node[0]}$ - DAF")
+    plt.xlabel('Id do Nó')
+    plt.ylabel('Frequência (Hz)')
+    plt.colorbar()
     plt.show()
 # %%
