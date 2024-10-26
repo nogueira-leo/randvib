@@ -102,11 +102,12 @@ De forma similar, o artigo Marcheto et al 2017, "Vibroacoustic response of panel
 \end{enumerate}
 
 \section{Solução}
-
+\subsection{Auto Espectro}
+Segundo \cite{hambricVibrationsPlatesClamped2004}, o espectro cruzado da pressão acústica exercida por um escoamento turbulento paralelo a uma placa pode ser definido pela equação abaixo.
 \begin{equation}
-	\Phi_{pp}(x_\mu,x_v,\omega)=\bar{\phi}_{pp}(\omega)\Gamma(\xi_1,\xi_3,\omega)
+	\Phi_{pp}(x_\mu,x_v,\omega)=\bar{\phi}_{pp}(\omega)\Gamma(\xi_1,\xi_3,\omega),
 \end{equation}
-
+onde $\phi_{pp}$ é o auto espectro da pressão, que pode ser satisfatoriamente aproximado pela equação a seguir.
 \begin{equation}
 	\phi_{pp}(\omega)\approx\left(\frac{\tau_w^2\delta^*}{U_0}\right)\left(\frac{5.1}{1+0.44(\omega\delta^*/U_0)^{7/3}}\right)
 \end{equation}
@@ -114,7 +115,7 @@ De forma similar, o artigo Marcheto et al 2017, "Vibroacoustic response of panel
 \begin{equation}
 	\mathrm{Re}_\delta\approx8U_0\delta^*/\nu, \quad \tau_w\approx0.0225\rho U_0^2/\mathrm{Re}_\delta^{0.25}
 \end{equation}
-
+Calculando-se o auto espectro da pressão acústica para as velocidades de fluxo, como visto em Hambric \cite{hambricVibrationsPlatesClamped2004} podemos expressar graficamente estes resultados em função da frequência como visto na Figura~\ref{fig:psd}.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\columnwidth]{figures/psd_vel.png}
@@ -122,6 +123,9 @@ De forma similar, o artigo Marcheto et al 2017, "Vibroacoustic response of panel
 	\label{fig:psd}
 \end{figure}
 
+\subsection{Coerência}
+
+O próximo passo é encontrar o espectro da coerência $\Gamma(\xi_1,\xi_3,\omega)$ com as equações a seguir. 
 \begin{equation}
 	\Gamma(\xi_1,\xi_3,\omega)=A(\omega\xi_1/U_c)B(\omega\xi_3/U_c)
 \end{equation}
@@ -134,17 +138,7 @@ De forma similar, o artigo Marcheto et al 2017, "Vibroacoustic response of panel
 	A(\omega\xi_1/U_c)=(1+\alpha_1|\omega\xi_1/U_c|)\mathrm{e}^{-\alpha_1|\omega\xi_1/U_c|}\mathrm{e}^{\mathrm{i}\omega\xi_1/U_c} \\
 	B(\omega\xi_3/U_c)=\mathrm{e}^{-\alpha_3|\omega\xi_3/U_c|}
 \end{eqnarray}
-
-
-\begin{equation}
-	G_{x_\mu x_v}(\omega)=A_{x_\mu}\phi_{pp}(\omega)A_{x_v}\Gamma(\xi_1,\xi_3,\omega)
-\end{equation}
-
-
-
-
-
-
+O artigo de Hambric~\cite{hambricVibrationsPlatesClamped2004} define como ponto de observação o ponto de coordenadas $(15cm, 12cm)$ a partir do vértice inferior a esquerda, que no caso do modelo em Elementos Finitos desenvolvido neste trabalho é o nó 227. A coerência do nó 227 em relação a todos os nós em função da frequência pode ser observado na Figura~\ref{fig:coerTBL}
 
 \begin{figure}[H]
 	\centering
@@ -152,6 +146,12 @@ De forma similar, o artigo Marcheto et al 2017, "Vibroacoustic response of panel
 	\caption{}
 	\label{fig:coerTBL}
 \end{figure}
+O artigo de Marchetto~\cite{marchettoVibroacousticResponsePanels2017} que analisa o efeito de um campo acústico difuso sobre uma placa define o espectro cruzado da pressão do campo acústico como:
+
+\begin{equation}
+	S_{pp}(r,\omega) = S_{pp}(\omega) \frac{sin(k_0r)}{k_0r},
+\end{equation}
+onde $S_{pp}(\omega)$ é o auto espectro da pressão. Logo o termo representando a coerência espacial em função da frequência é $\Gamma(r,\omega) = \frac{sin(k_0r)}{k_0r}$, sendo $r = |x_\mu - x_v|$. A coerência do campo difuso pode ser observada na Figura~\ref{fig:coerDAF}.
 
 \begin{figure}[H]
 	\centering
@@ -159,8 +159,36 @@ De forma similar, o artigo Marcheto et al 2017, "Vibroacoustic response of panel
 	\caption{}
 	\label{fig:coerDAF}
 \end{figure}
+\vfill
+\subsection{Espectro Cruzado da Entrada}
+Definindo-se o Espectro Cruzado da pressão como: 
+\begin{equation}
+	G_{x_\mu x_v}(\omega)=A_{x_\mu}\phi_{pp}(\omega)A_{x_v}\Gamma(\xi_1,\xi_3,\omega)
+\end{equation}
+Temos então as Figuras~\ref{fig:csdTBL} e \ref{fig:csdDAF}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\columnwidth]{figures/csd_TBL.png}
+	\caption{}
+	\label{fig:csdTBL}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\columnwidth]{figures/csd_DAF.png}
+	\caption{}
+	\label{fig:csdDAF}
+\end{figure}
 
 
+\begin{equation}
+	G_{uu}(y_i,y_j,\omega)\cong\sum_{\mu=1}^N\sum_{v=1}^NH_{u,F}^*(y_i/x_\mu,\omega)A_{x_\mu}\Phi_{pp}(x_\mu,x_v,\omega)A_{x_v}H_{u,F}(y_j/x_v,\omega)
+\end{equation}
+
+\begin{equation}
+	\mathbf{G}_{yy}=\mathbf{H}_{xy}^{*T}\mathbf{G}_{xx}\mathbf{H}_{xy}
+\end{equation}
 
 
 \begin{figure}[H]

@@ -30,8 +30,8 @@ if __name__ == "__main__":
     
     
     # Propriedades
-    E = 200e9
-    rho = 7850
+    E = 210e9
+    rho = 8000
     v = 0.3
     alpha_x = 0.11
     alpha_y = 0.7
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     stif_matrix, mass_matrix = fems4.stif_mass_matrices(coord, connect, nnode, nel, ind_rows, ind_cols, E, v, rho, h)
     
     ################### ANÁLISE MODAL ###############################
-    modes = 30
+    modes = 5
     modal_shape = np.zeros((5*nnode,modes))
     natural_frequencies, modal_shape[free_dofs,:] = solv.modal_analysis(stif_matrix[free_dofs, :][:, free_dofs], mass_matrix[free_dofs, :][:, free_dofs], modes, which='LM', sigma=0.01)
     print('Frequências Naturais:')
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     csd = pd.DataFrame(index=freq, dtype=complex)
     Vr = modal_shape[z_dofs,:]  # Modos normais
     wn = 2 * np.pi * natural_frequencies  # Frequências naturais (rad/s)
-    glf = check_node[0]  # Grau de liberdade da força
+    glf = check_node[1]  # Grau de liberdade da força
     w = 2 * np.pi * freq  # Frequências angulares
 
 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
         Hv = np.zeros((len(z_dofs), len(freq)), dtype=complex)
         
         # Pré-calculando termos repetidos para otimização
-        eta_wn2 = eta * wn**2  # Termo de amortecimento modal
+        eta_wn2 = eta * wn  # Termo de amortecimento modal
         wn2 = wn**2  # Frequência natural ao quadrado
 
         # Vetorização dos cálculos das FRFs
@@ -119,7 +119,7 @@ if __name__ == "__main__":
             # Pré-calculando para cada grau de liberdade de resposta
             for k in range(modes):
                 # Cálculo vetorizado para todas as frequências de uma vez
-                den = (1j * w)/ (wn2[k] - w**2 + 1j * eta_wn2[k])
+                den = (1j * w)/ (wn2[k] - w**2 + 1j * eta_wn2[k]*w)
                 # FRF pontual (mesmo ponto de força)                
                 Hv[glr, :] += Vr[glr, k] * Vr[glf, k] * den
 
@@ -198,28 +198,6 @@ if __name__ == "__main__":
                 
             
 
-
-            #plt.figure(figsize=(16,9), dpi=200, layout='tight')
-            #plt.title(rf"PSD - $\eta={eta}, U_0={U0}$")
-            #plt.plot(freq, 10*np.log10(np.abs(phi_pp/2e-5**2)),'k')
-            #plt.xlabel("Frequência [Hz]")
-            #plt.ylabel("PSD [dB]")
-            ##plt.ylim(84.55,84.60)
-            #plt.grid(True, which='both')
-            
-            #plt.savefig(f"c:\\Users\\User\\OneDrive\\Documentos\\GitHub\\randvib\\relatorio\\figures\\psd_{n_eta}_{n_U0}.png")
-
-            #plt.figure(figsize=(16,9), dpi=200, layout='tight')
-            #plt.title(rf"CSD X(0.15,0.12) - $\eta={eta}, U_0={U0}$")
-            #plt.plot(freq,(10*np.log10(np.abs(Gvv_TBL/1e-9**2))))
-            #plt.plot(freq,(10*np.log10(np.abs(Gvv_DAF/1e-9**2))))
-            #plt.xlabel("Frequência [Hz]")
-            #plt.ylabel("CSD [dB]")
-            #plt.legend(["TBL", "DAF"])
-            #plt.grid(True, which='both')
-            #plt.savefig(f"c:\\Users\\User\\OneDrive\\Documentos\\GitHub\\randvib\\relatorio\\figures\\csd_{n_eta}_{n_U0}.png")
-
-
             
             psd[f'psd_{n_eta}_{n_U0}'] = phi_pp
             csd[f'TBL_{n_eta}_{n_U0}'] = Gvv_TBL
@@ -247,13 +225,13 @@ if __name__ == "__main__":
     # %%
 
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"Densidade Espectral Crusada X(0.15,0.12) - $\eta={eta[2]}$")
-    plt.plot(10*np.log10(np.abs(csd[f'TBL_{2}_{0}']/1e-9**2)), 'r')
-    plt.plot(10*np.log10(np.abs(csd[f'TBL_{2}_{1}']/1e-9**2)), '--r')
-    plt.plot(10*np.log10(np.abs(csd[f'TBL_{2}_{2}']/1e-9**2)), ':r')
-    plt.plot(10*np.log10(np.abs(csd[f'DAF_{2}_{0}']/1e-9**2)), 'b')
-    plt.plot(10*np.log10(np.abs(csd[f'DAF_{2}_{1}']/1e-9**2)), '--b')
-    plt.plot(10*np.log10(np.abs(csd[f'DAF_{2}_{2}']/1e-9**2)), ':b')
+    plt.title(rf"Densidade Espectral Crusada X(0.15,0.12) - $\eta={eta[1]}$")
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{0}']/1e-9**2)), 'r')
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{2}']/1e-9**2)), ':r')
+    plt.plot(10*np.log10(np.abs(csd[f'DAF_{1}_{0}']/1e-9**2)), 'b')
+    plt.plot(10*np.log10(np.abs(csd[f'DAF_{1}_{1}']/1e-9**2)), '--b')
+    plt.plot(10*np.log10(np.abs(csd[f'DAF_{1}_{2}']/1e-9**2)), ':b')
     plt.xlabel("Frequência (Hz)")
     plt.ylabel("CSD (dB ref $1nm$) ")
     plt.legend([f"TBL - $U_0 = {U0[0]} m/s$",
@@ -285,43 +263,68 @@ if __name__ == "__main__":
     plt.show()
 
     # %%
-    plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"Densidade Espectral Crusada X(0.15,0.12) - $\eta={eta[1]}$")
-    plt.plot(10*np.log10(np.abs(csd[f'TBL_{}_{0}']/1e-9**2)), 'r')
+    
 
 
     # %%
 
-    Gvvw_TBL = Gamma_TBL[check_node[0],:,:].T
-    Gvvw_DAF = Gamma_DAF[check_node[0],:,:].T
-    Gppw_TBL = Gpp_TBL[check_node[0],:,:].T
-    Gppw_DAF = Gpp_DAF[check_node[0],:,:].T
+    Gvvw_TBL = Gamma_TBL[check_node[1],:,:].T
+    Gvvw_DAF = Gamma_DAF[check_node[1],:,:].T
+    Gppw_TBL = Gpp_TBL[check_node[1],:,:].T
+    Gppw_DAF = Gpp_DAF[check_node[1],:,:].T
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.imshow(np.abs(Gvvw_TBL), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
-    plt.title(rf"Coerência Espacial do Nó ${check_node[0]}$ - TBL")
+    plt.title(rf"Coerência Espacial do Nó ${check_node[1]}$ - TBL")
     plt.xlabel('Id do Nó')
     plt.ylabel('Frequência (Hz)')
     plt.colorbar()
     plt.show()
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.imshow(np.abs(Gvvw_DAF), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
-    plt.title(rf"Coerência Espacial do Nó ${check_node[0]}$ - DAF")
+    plt.title(rf"Coerência Espacial do Nó ${check_node[1]}$ - DAF")
     plt.xlabel('Id do Nó')
     plt.ylabel('Frequência (Hz)')
     plt.colorbar()
     plt.show()
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.imshow(np.abs(Gppw_TBL), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
-    plt.title(rf"Densidade Espectral Cruzada do Nó ${check_node[0]}$ - TBL")
+    plt.title(rf"Densidade Espectral Cruzada do Nó ${check_node[1]}$ - TBL")
     plt.xlabel('Id do Nó')
     plt.ylabel('Frequência (Hz)')
     plt.colorbar()
     plt.show()
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.imshow(np.abs(Gppw_DAF), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
-    plt.title(rf"Densidade Espectral Cruzada do Nó ${check_node[0]}$ - DAF")
+    plt.title(rf"Densidade Espectral Cruzada do Nó ${check_node[1]}$ - DAF")
     plt.xlabel('Id do Nó')
     plt.ylabel('Frequência (Hz)')
     plt.colorbar()
+    plt.show()
+    # %%
+    plt.figure(figsize=(16,9), dpi=200, layout='tight')
+    plt.title(rf"Densidade Espectral Crusada X(0.15,0.12) - $\eta={eta[1]}$")
+    plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{0}']/1e-9**2)), 'r')
+    plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
+    plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{2}']/1e-9**2)), ':r')
+    plt.plot(f_0, 10*np.log10(np.abs(Gvv_0/1e-9**2)), 'g')
+    plt.plot(f_1, 10*np.log10(np.abs(Gvv_1/1e-9**2)), '--g')
+    plt.plot(f_2, 10*np.log10(np.abs(Gvv_2/1e-9**2)), ':g')
+    plt.xlabel('Frequência (Hz)')
+    plt.ylabel('CSD (dB ref $1nm$) ')
+    plt.grid(True)
+    plt.show()
+
+
+
+
+
+
+    # %%
+    plt.figure(figsize=(16,9), dpi=200, layout='tight')
+    plt.title(rf"FRFs - do Nó 227")
+    plt.plot(freq,10*np.log10(np.abs(Hv.T)),'lightgray')
+    plt.plot(freq,10*np.log10(np.abs(Hv[check_node[1],:].T)),'k')
+    plt.xlabel('Frequência (Hz)')
+    plt.ylabel('Mobilidade (dB)')
     plt.show()
 # %%
