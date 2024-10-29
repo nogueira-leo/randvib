@@ -94,7 +94,7 @@ if __name__ == "__main__":
     natural_frequencies, modal_shape[free_dofs,:] = solv.modal_analysis(stif_matrix[free_dofs, :][:, free_dofs], mass_matrix[free_dofs, :][:, free_dofs], modes, which='LM', sigma=0.01)
     print('Frequências Naturais:')
     print(natural_frequencies)
-    
+    # %%
     freq = np.linspace(50,2000,300)
     psd = pd.DataFrame(index=freq, dtype=float)
     csd = pd.DataFrame(index=freq, dtype=complex)
@@ -111,7 +111,7 @@ if __name__ == "__main__":
         Hv = np.zeros((len(z_dofs), len(freq)), dtype=complex)
         
         # Pré-calculando termos repetidos para otimização
-        eta_wn2 = eta * wn  # Termo de amortecimento modal
+        eta_wn2 = eta * wn**2  # Termo de amortecimento modal
         wn2 = wn**2  # Frequência natural ao quadrado
 
         # Vetorização dos cálculos das FRFs
@@ -119,7 +119,7 @@ if __name__ == "__main__":
             # Pré-calculando para cada grau de liberdade de resposta
             for k in range(modes):
                 # Cálculo vetorizado para todas as frequências de uma vez
-                den = (1j * w)/ (wn2[k] - w**2 + 1j * eta_wn2[k]*w)
+                den = (1j * w)/ (wn2[k] - w**2 + 1j * eta_wn2[k])
                 # FRF pontual (mesmo ponto de força)                
                 Hv[glr, :] += Vr[glr, k] * Vr[glf, k] * den
 
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     # %%
 
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"Densidade Espectral Crusada X(0.15,0.12) - $\eta={eta[1]}$")
+    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[1]}$ - $\eta={eta[1]}$")
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{0}']/1e-9**2)), 'r')
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{2}']/1e-9**2)), ':r')
@@ -244,7 +244,7 @@ if __name__ == "__main__":
     plt.show()
     # %% 
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"Densidade Espectral Crusada X(0.15,0.12) - $U_0={U0[1]} m/s$")
+    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[1]}$ - $U_0={U0[1]} m/s$")
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{0}_{1}']/1e-9**2)), 'r')
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{2}_{1}']/1e-9**2)), ':r')
@@ -302,7 +302,7 @@ if __name__ == "__main__":
     plt.show()
     # %%
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"Densidade Espectral Crusada X(0.15,0.12) - $\eta={eta[1]}$")
+    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[1]}$ - $\eta={eta[1]}$")
     plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{0}']/1e-9**2)), 'r')
     plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
     plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{2}']/1e-9**2)), ':r')
@@ -321,9 +321,10 @@ if __name__ == "__main__":
 
     # %%
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"FRFs - do Nó 227")
+    plt.title(rf"FRFs - do - Nó ${check_node[1]}$")
     plt.plot(freq,10*np.log10(np.abs(Hv.T)),'lightgray')
     plt.plot(freq,10*np.log10(np.abs(Hv[check_node[1],:].T)),'k')
+
     plt.xlabel('Frequência (Hz)')
     plt.ylabel('Mobilidade (dB)')
     plt.show()

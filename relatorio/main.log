@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.6.9)  26 OCT 2024 13:34
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.6.9)  27 OCT 2024 13:10
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -2117,8 +2117,23 @@ File: figures/csd_DAF.png Graphic file (type png)
 <use figures/csd_DAF.png>
 Package pdftex.def Info: figures/csd_DAF.png  used on input line 179.
 (pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
+<figures/frfs.png, id=56, 693.792pt x 352.31625pt>
+File: figures/frfs.png Graphic file (type png)
+<use figures/frfs.png>
+Package pdftex.def Info: figures/frfs.png  used on input line 192.
+(pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
+<figures/csd_comp.png, id=57, 693.792pt x 352.31625pt>
+File: figures/csd_comp.png Graphic file (type png)
+<use figures/csd_comp.png>
+Package pdftex.def Info: figures/csd_comp.png  used on input line 199.
+(pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
 
-Overfull \hbox (16.21242pt too wide) detected at line 187
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+
+
+Overfull \hbox (16.21242pt too wide) detected at line 208
 [][][]\LS1/stix2/m/it/9 G[]\LS1/stix2/m/n/9 .\LS1/stix2/m/it/9 y[]; y[]; !\LS1/
 stix2/m/n/9 / ö [] [] \LS1/stix2/m/it/9 H[]\LS1/stix2/m/n/9 .\LS1/stix2/m/it/9 
 y[]\LS1/stix2/m/n/9 _\LS1/stix2/m/it/9 x[]; !\LS1/stix2/m/n/9 /\LS1/stix2/m/it/
@@ -2127,23 +2142,18 @@ y[]\LS1/stix2/m/n/9 _\LS1/stix2/m/it/9 x[]; !\LS1/stix2/m/n/9 /\LS1/stix2/m/it/
 S1/stix2/m/it/9 x[]; !\LS1/stix2/m/n/9 /
  []
 
-<figures/csd_vel.png, id=56, 693.792pt x 352.31625pt>
+<figures/csd_vel.png, id=58, 693.792pt x 352.31625pt>
 File: figures/csd_vel.png Graphic file (type png)
 <use figures/csd_vel.png>
-Package pdftex.def Info: figures/csd_vel.png  used on input line 196.
+Package pdftex.def Info: figures/csd_vel.png  used on input line 217.
 (pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
-<figures/csd_eta.png, id=57, 693.792pt x 352.31625pt>
+<figures/csd_eta.png, id=59, 693.792pt x 352.31625pt>
 File: figures/csd_eta.png Graphic file (type png)
 <use figures/csd_eta.png>
-Package pdftex.def Info: figures/csd_eta.png  used on input line 203.
+Package pdftex.def Info: figures/csd_eta.png  used on input line 224.
 (pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
-
 LaTeX Font Info:    Trying to load font information for TS1+stix2 on input line
- 211.
+ 232.
 
 (C:\Users\nogue\AppData\Local\Programs\MiKTeX\tex/fonts/stix2-type1\ts1stix2.fd
 File: ts1stix2.fd 2018/04/02 v2.0.0-latex stix2 TS1 font definitions
@@ -2157,7 +2167,8 @@ Package microtype Info: Character `textflorin ' is missing
 x2-mathrm-bold.enc}{C:/Users/nogue/AppData/Local/Programs/MiKTeX/fonts/enc/dvip
 s/stix2-type1/stix2-ts1.enc}{C:/Users/nogue/AppData/Local/Programs/MiKTeX/fonts
 /enc/dvips/stix2-type1/stix2-t1sc.enc} <./figures/csd_TBL.png> <./figures/csd_D
-AF.png> <./figures/csd_vel.png> <./figures/csd_eta.png>]
+AF.png> <./figures/frfs.png> <./figures/csd_comp.png> <./figures/csd_vel.png> <
+./figures/csd_eta.png>]
 
 enddocument/afterlastpage: lastpage setting LastPage.
 (main.aux)
@@ -2170,22 +2181,22 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 68565 strings out of 473938
- 1505939 string characters out of 5727392
- 2653599 words of memory out of 5000000
- 90367 multiletter control sequences out of 15000+600000
+ 68588 strings out of 473938
+ 1506399 string characters out of 5727392
+ 2653733 words of memory out of 5000000
+ 90386 multiletter control sequences out of 15000+600000
  658229 words of font info for 184 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 137i,15n,143p,2055b,1629s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 137i,16n,143p,2055b,1648s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/nogue/AppData/Local/Programs/MiKTeX/fonts/type1/public/stix2-type1/
 STIX2Math.pfb><C:/Users/nogue/AppData/Local/Programs/MiKTeX/fonts/type1/public/
 stix2-type1/STIX2Text-Italic.pfb><C:/Users/nogue/AppData/Local/Programs/MiKTeX/
 fonts/type1/public/stix2-type1/STIX2Text-Regular.pfb><C:/Users/nogue/AppData/Lo
 cal/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/Users/nogue/AppData
 /Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvr8a.pfb>
-Output written on main.pdf (2 pages, 3500342 bytes).
+Output written on main.pdf (2 pages, 3825998 bytes).
 PDF statistics:
- 147 PDF objects out of 1000 (max. 8388607)
- 30 named destinations out of 1000 (max. 500000)
- 47192 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 159 PDF objects out of 1000 (max. 8388607)
+ 34 named destinations out of 1000 (max. 500000)
+ 47210 words of extra memory for PDF output out of 51595 (max. 10000000)
 
