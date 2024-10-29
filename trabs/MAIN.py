@@ -108,20 +108,21 @@ if __name__ == "__main__":
     for n_eta, eta in enumerate([0.5, 0.05, 0.005]):
 
         # Inicializando as FRFs    
-        Hv = np.zeros((len(z_dofs), len(freq)), dtype=complex)
+        Hv = np.zeros((len(z_dofs), len(z_dofs), len(freq)), dtype=complex)
         
         # Pré-calculando termos repetidos para otimização
         eta_wn2 = eta * wn**2  # Termo de amortecimento modal
         wn2 = wn**2  # Frequência natural ao quadrado
 
         # Vetorização dos cálculos das FRFs
-        for glr in range(len(z_dofs)):
-            # Pré-calculando para cada grau de liberdade de resposta
-            for k in range(modes):
-                # Cálculo vetorizado para todas as frequências de uma vez
-                den = (1j * w)/ (wn2[k] - w**2 + 1j * eta_wn2[k])
-                # FRF pontual (mesmo ponto de força)                
-                Hv[glr, :] += Vr[glr, k] * Vr[glf, k] * den
+        for glf in range(len(z_dofs)):
+            for glr in range(len(z_dofs)):
+                # Pré-calculando para cada grau de liberdade de resposta
+                for k in range(modes):
+                    # Cálculo vetorizado para todas as frequências de uma vez
+                    den = (1j * w)/ (wn2[k] - w**2 + 1j * eta_wn2[k])
+                    # FRF pontual (mesmo ponto de força)                
+                    Hv[glr,glf, :] += Vr[glr, k] * Vr[glf, k] * den
 
         
         for n_U0, U0 in enumerate([44.7, 89.4, 178.8]):
@@ -191,8 +192,8 @@ if __name__ == "__main__":
 
             
             for ii in range(len(freq)):
-                Gvv_TBL[ii] = np.conj(Hv[:,ii].T)@(phi_pp[ii]*Gamma_TBL[:,:,ii])@Hv[:,ii]
-                Gvv_DAF[ii] = np.conj(Hv[:,ii].T)@(phi_pp[ii]*Gamma_DAF[:,:,ii])@Hv[:,ii]
+                Gvv_TBL[ii] = np.conj(Hv[:,:,ii].T)@(phi_pp[ii]*Gamma_TBL[:,:,ii])@Hv[:,:,ii]*Aij**2
+                Gvv_DAF[ii] = np.conj(Hv[:,:,ii].T)@(phi_pp[ii]*Gamma_DAF[:,:,ii])@Hv[:,:,ii]*Aij**2
                 Gpp_TBL[:,:,ii] = phi_pp[ii]*Gamma_TBL[:,:,ii]
                 Gpp_DAF[:,:,ii] = phi_pp[ii]*Gamma_DAF[:,:,ii]
                 
