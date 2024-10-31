@@ -11,7 +11,6 @@ import pandas as pd
 import matplotlib
 from numpy.linalg import norm
 import os
-import xarray as xr
 matplotlib.use('qtagg')
 
 
@@ -102,11 +101,34 @@ if __name__ == "__main__":
     Vr = modal_shape[z_dofs,:]  # Modos normais
     wn = 2 * np.pi * natural_frequencies  # Frequências naturais (rad/s)
     #glf = check_node[1]  # Grau de liberdade da força
-    w = 2 * np.pi * freq  # Frequências angulares
+    w_array = 2 * np.pi * freq  # Frequências angulares
 
+    # Function to compute phi_pb for a specific frequency index kk
+    def compute_Gamma_DAF(kk, w, coord, c0, nnode):
+        k0 = w / c0
+        Gamma = np.zeros((nnode, nnode), dtype=complex)  # For storing results of phi_pb for this frequency
+        for ii, x1 in enumerate(coord):
+            for jj, x2 in enumerate(coord):
+                if ii != jj:
+                    distance = norm(abs(x1 - x2))
+                    Gamma[ii, jj] = np.sin(k0 * distance) / (k0 * distance)
+                else:
+                    Gamma[ii, jj] = 1  # Evitar divisão por zero
+        return Gamma, kk
 
+    # Preallocate arrays
+    Gamma_DAF = np.zeros((nnode, nnode, len(w_array)), dtype=complex)
 
-    for n_eta, eta in enumerate([0.5, 0.05, 0.005]):
+    # Parallel computation of phi_pb using joblib
+    results_DAF = Parallel(n_jobs=-1)(delayed(compute_Gamma_DAF)(
+        kk, w, coord, c0, nnode) for kk, w in enumerate(w_array))
+
+    # Combine the results back into phi_pb
+    for Gamma, kk in results_DAF:
+        Gamma_DAF[:, :, kk] = Gamma
+
+    #%%
+    for n_eta, eta in enumerate([0.05]):
 
         # Inicializando as FRFs    
         Hv = np.zeros((len(z_dofs), len(z_dofs), len(freq)), dtype=complex)
@@ -121,12 +143,12 @@ if __name__ == "__main__":
                 # Pré-calculando para cada grau de liberdade de resposta
                 for k in range(modes):
                     # Cálculo vetorizado para todas as frequências de uma vez
-                    den = (1j * w)/ (wn2[k] - w**2 + 1j * eta_wn2[k])
+                    den = (1j * w_array)/ (wn2[k] - w_array**2 + 1j * eta_wn2[k])
                     # FRF pontual (mesmo ponto de força)                
                     Hv[glr,glf, :] += Vr[glr, k] * Vr[glf, k] * den
 
         
-        for n_U0, U0 in enumerate([44.7, 89.4, 178.8]):
+        for n_U0, U0 in enumerate([44.7]):
             Re_d = 8 * U0*d_/v_air
             tau_w = (0.0225 * rho_air * U0**2)/(Re_d**0.25)
             # Pré-computando constantes fora dos loops
@@ -140,7 +162,7 @@ if __name__ == "__main__":
             Aij = (tamanho_elemento)**2  # Precomputando Aij fora do loop
             Aij = 0.47*0.37  # Precomputando Aij fora do loop
             # Função paralelizada que será aplicada em cada frequência
-            def compute_Gamma_TBL(kk, w, Uc, ksix, ksiy, alpha_x, alpha_y):
+            def compute_Gamma_TBL(kk, w, Uc, ksix, ksiy, alpha_x, alpha_y, Aij):
                 ksix_Uc = np.abs(w * ksix / Uc)
                 ksiy_Uc = np.abs(w * ksiy / Uc)
                 # Precomputando o termo Gamma
@@ -154,7 +176,7 @@ if __name__ == "__main__":
 
             # Usando joblib para paralelizar o loop sobre frequências
             results_TBL = Parallel(n_jobs=-2)(delayed(compute_Gamma_TBL)(
-                kk, w, Uc, ksix, ksiy, alpha_x, alpha_y) for kk, (w,  Uc) in enumerate(zip(w_array, Uc_array)))
+                kk, w, Uc, ksix, ksiy, alpha_x, alpha_y, Aij) for kk, (w,  Uc) in enumerate(zip(w_array, Uc_array)))
 
             # Atualizando Gamma_w com os resultados paralelizados
             Gamma_TBL = np.zeros((nnode,nnode,len(freq)), dtype=complex)   
@@ -162,29 +184,7 @@ if __name__ == "__main__":
                 Gamma_TBL[:,:,kk] = Gamma
 
             
-            # Function to compute phi_pb for a specific frequency index kk
-            def compute_Gamma_DAF(kk, w, coord, c0, nnode):
-                k0 = w / c0
-                Gamma = np.zeros((nnode, nnode), dtype=complex)  # For storing results of phi_pb for this frequency
-                for ii, x1 in enumerate(coord):
-                    for jj, x2 in enumerate(coord):
-                        if ii != jj:
-                            distance = norm(abs(x1 - x2))
-                            Gamma[ii, jj] = np.sin(k0 * distance) / (k0 * distance)
-                        else:
-                            Gamma[ii, jj] = 1  # Evitar divisão por zero
-                return Gamma, kk
 
-            # Preallocate arrays
-            Gamma_DAF = np.zeros((nnode, nnode, len(w_array)), dtype=complex)
-
-            # Parallel computation of phi_pb using joblib
-            results_DAF = Parallel(n_jobs=-1)(delayed(compute_Gamma_DAF)(
-                kk, w, coord, c0, nnode) for kk, w in enumerate(w_array))
-
-            # Combine the results back into phi_pb
-            for Gamma, kk in results_DAF:
-                Gamma_DAF[:, :, kk] = Gamma
              
             Gvv_TBL = np.zeros_like(Gamma_DAF, dtype=complex)
             Gvv_DAF = np.zeros_like(Gamma_DAF, dtype=complex)
@@ -200,10 +200,10 @@ if __name__ == "__main__":
                 
             
 
-            #%%
+            
             psd[f'psd_{n_eta}_{n_U0}'] = phi_pp
-            csd[f'TBL_{n_eta}_{n_U0}'] = Gvv_TBL[check_node[1],check_node[1],:]
-            csd[f'DAF_{n_eta}_{n_U0}'] = Gvv_DAF[check_node[1],check_node[1],:]
+            csd[f'TBL_{n_eta}_{n_U0}'] = Gvv_TBL[check_node[1], check_node[1],:]
+            csd[f'DAF_{n_eta}_{n_U0}'] = Gvv_DAF[check_node[1], check_node[1],:]
 
     # %% 
     eta = [0.5, 0.05, 0.005]
@@ -322,13 +322,12 @@ if __name__ == "__main__":
 
 
     # %%
-
-    plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"FRFs - do - Nó ${check_node[1]}$")
-    plt.plot(freq,10*np.log10(np.abs(Hv[check_dof[1],:,:].T)),'lightgray')
-    plt.plot(freq,10*np.log10(np.abs(Hv[check_node[1], check_node[1],:].T)),'k')
-    #
-    plt.xlabel('Frequência (Hz)')
-    plt.ylabel('Mobilidade (dB)')
-    plt.show()
+    #plt.figure(figsize=(16,9), dpi=200, layout='tight')
+    #plt.title(rf"FRFs - do - Nó ${check_node[1]}$")
+    #plt.plot(freq,10*np.log10(np.abs(Hv.T)),'lightgray')
+    #plt.plot(freq,10*np.log10(np.abs(Hv[check_node[1],:].T)),'k')
+#
+    #plt.xlabel('Frequência (Hz)')
+    #plt.ylabel('Mobilidade (dB)')
+    #plt.show()
 # %%
