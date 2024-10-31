@@ -11,6 +11,7 @@ import pandas as pd
 import matplotlib
 from numpy.linalg import norm
 import os
+import xarray as xr
 matplotlib.use('qtagg')
 
 
@@ -139,7 +140,7 @@ if __name__ == "__main__":
             Aij = (tamanho_elemento)**2  # Precomputando Aij fora do loop
             Aij = 0.47*0.37  # Precomputando Aij fora do loop
             # Função paralelizada que será aplicada em cada frequência
-            def compute_Gamma_TBL(kk, w, Uc, ksix, ksiy, alpha_x, alpha_y, Aij):
+            def compute_Gamma_TBL(kk, w, Uc, ksix, ksiy, alpha_x, alpha_y):
                 ksix_Uc = np.abs(w * ksix / Uc)
                 ksiy_Uc = np.abs(w * ksiy / Uc)
                 # Precomputando o termo Gamma
@@ -153,7 +154,7 @@ if __name__ == "__main__":
 
             # Usando joblib para paralelizar o loop sobre frequências
             results_TBL = Parallel(n_jobs=-2)(delayed(compute_Gamma_TBL)(
-                kk, w, Uc, ksix, ksiy, alpha_x, alpha_y, Aij) for kk, (w,  Uc) in enumerate(zip(w_array, Uc_array)))
+                kk, w, Uc, ksix, ksiy, alpha_x, alpha_y) for kk, (w,  Uc) in enumerate(zip(w_array, Uc_array)))
 
             # Atualizando Gamma_w com os resultados paralelizados
             Gamma_TBL = np.zeros((nnode,nnode,len(freq)), dtype=complex)   
@@ -185,24 +186,24 @@ if __name__ == "__main__":
             for Gamma, kk in results_DAF:
                 Gamma_DAF[:, :, kk] = Gamma
              
-            Gvv_TBL = np.zeros(len(freq), dtype=complex)
-            Gvv_DAF = np.zeros(len(freq), dtype=complex)
+            Gvv_TBL = np.zeros_like(Gamma_DAF, dtype=complex)
+            Gvv_DAF = np.zeros_like(Gamma_DAF, dtype=complex)
             Gpp_TBL = np.zeros_like(Gamma_DAF, dtype=complex)
             Gpp_DAF = np.zeros_like(Gamma_DAF, dtype=complex)
 
             
             for ii in range(len(freq)):
-                Gvv_TBL[ii] = np.conj(Hv[:,:,ii].T)@(phi_pp[ii]*Gamma_TBL[:,:,ii])@Hv[:,:,ii]*Aij**2
-                Gvv_DAF[ii] = np.conj(Hv[:,:,ii].T)@(phi_pp[ii]*Gamma_DAF[:,:,ii])@Hv[:,:,ii]*Aij**2
+                Gvv_TBL[:,:,ii] = np.conj(Hv[:,:,ii].T)@(phi_pp[ii]*Gamma_TBL[:,:,ii])@Hv[:,:,ii]*Aij**2
+                Gvv_DAF[:,:,ii] = np.conj(Hv[:,:,ii].T)@(phi_pp[ii]*Gamma_DAF[:,:,ii])@Hv[:,:,ii]*Aij**2
                 Gpp_TBL[:,:,ii] = phi_pp[ii]*Gamma_TBL[:,:,ii]
                 Gpp_DAF[:,:,ii] = phi_pp[ii]*Gamma_DAF[:,:,ii]
                 
             
 
-            
+            #%%
             psd[f'psd_{n_eta}_{n_U0}'] = phi_pp
-            csd[f'TBL_{n_eta}_{n_U0}'] = Gvv_TBL
-            csd[f'DAF_{n_eta}_{n_U0}'] = Gvv_DAF
+            csd[f'TBL_{n_eta}_{n_U0}'] = Gvv_TBL[check_node[1],check_node[1],:]
+            csd[f'DAF_{n_eta}_{n_U0}'] = Gvv_DAF[check_node[1],check_node[1],:]
 
     # %% 
     eta = [0.5, 0.05, 0.005]
