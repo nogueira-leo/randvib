@@ -49,7 +49,7 @@ if __name__ == "__main__":
     lx = 0.47 # Comprimento
     ly = 0.37 # Altura
 
-    tamanho_elemento = 0.005
+    tamanho_elemento = 0.01
     coord, connect, nodes_faceX1, nodes_faceX2, nodes_faceY1, nodes_faceY2, nodes_middle = msh.malha2D_QUAD4(lx,ly,tamanho_elemento)
     nnode = len(coord)
     nel = len(connect)
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     stif_matrix, mass_matrix = fems4.stif_mass_matrices(coord, connect, nnode, nel, ind_rows, ind_cols, E, v, rho, h)
     
     ################### ANÁLISE MODAL ###############################
-    modes = 5
+    modes = 10
     modal_shape = np.zeros((5*nnode,modes))
     natural_frequencies, modal_shape[free_dofs,:] = solv.modal_analysis(stif_matrix[free_dofs, :][:, free_dofs], mass_matrix[free_dofs, :][:, free_dofs], modes, which='LM', sigma=0.01)
     print('Frequências Naturais:')
@@ -177,7 +177,7 @@ if __name__ == "__main__":
             Gamma_DAF = np.zeros((nnode, nnode, len(w_array)), dtype=complex)
 
             # Parallel computation of phi_pb using joblib
-            results_DAF = Parallel(n_jobs=-1)(delayed(compute_Gamma_DAF)(
+            results_DAF = Parallel(n_jobs=-2)(delayed(compute_Gamma_DAF)(
                 kk, w, coord, c0, nnode) for kk, w in enumerate(w_array))
 
             # Combine the results back into phi_pb
