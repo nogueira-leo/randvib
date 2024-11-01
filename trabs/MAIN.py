@@ -102,18 +102,17 @@ if __name__ == "__main__":
     wn = 2 * np.pi * natural_frequencies  # Frequências naturais (rad/s)
     #glf = check_node[1]  # Grau de liberdade da força
     w_array = 2 * np.pi * freq  # Frequências angulares
+    k0_array = w_array/c0
 
+    # Diferenças de coordenadas
+    ksix = coord[:, None, 0] - coord[None, :, 0]  # Diferenças em x
+    ksiy = coord[:, None, 1] - coord[None, :, 1]  # Diferenças em y
+    ksin = norm(np.stack((ksix,ksiy)),2,0)
+    np.fill_diagonal(ksin,1)
+    # %%
     # Function to compute phi_pb for a specific frequency index kk
-    def compute_Gamma_DAF(kk, w, coord, c0, nnode):
-        k0 = w / c0
-        Gamma = np.zeros((nnode, nnode), dtype=complex)  # For storing results of phi_pb for this frequency
-        for ii, x1 in enumerate(coord):
-            for jj, x2 in enumerate(coord):
-                if ii != jj:
-                    distance = norm(abs(x1 - x2))
-                    Gamma[ii, jj] = np.sin(k0 * distance) / (k0 * distance)
-                else:
-                    Gamma[ii, jj] = 1  # Evitar divisão por zero
+    def compute_Gamma_DAF(kk,  k0,  ksin):
+        Gamma = np.sin(k0 * ksin) / (k0 * ksin)
         return Gamma, kk
 
     # Preallocate arrays
@@ -121,14 +120,14 @@ if __name__ == "__main__":
 
     # Parallel computation of phi_pb using joblib
     results_DAF = Parallel(n_jobs=-1)(delayed(compute_Gamma_DAF)(
-        kk, w, coord, c0, nnode) for kk, w in enumerate(w_array))
+        kk, k0, ksin) for kk, k0 in enumerate(k0_array))
 
     # Combine the results back into phi_pb
     for Gamma, kk in results_DAF:
         Gamma_DAF[:, :, kk] = Gamma
 
     #%%
-    for n_eta, eta in enumerate([0.05]):
+    for n_eta, eta in enumerate([0.5, 0.05, 0.005]):
 
         # Inicializando as FRFs    
         Hv = np.zeros((len(z_dofs), len(z_dofs), len(freq)), dtype=complex)
@@ -137,18 +136,32 @@ if __name__ == "__main__":
         eta_wn2 = eta * wn**2  # Termo de amortecimento modal
         wn2 = wn**2  # Frequência natural ao quadrado
 
-        # Vetorização dos cálculos das FRFs
-        for glf in range(len(z_dofs)):
-            for glr in range(len(z_dofs)):
-                # Pré-calculando para cada grau de liberdade de resposta
-                for k in range(modes):
-                    # Cálculo vetorizado para todas as frequências de uma vez
-                    den = (1j * w_array)/ (wn2[k] - w_array**2 + 1j * eta_wn2[k])
-                    # FRF pontual (mesmo ponto de força)                
-                    Hv[glr,glf, :] += Vr[glr, k] * Vr[glf, k] * den
+        # Function to compute the FRF for a specific (glf, glr) pair
+        def compute_FRF(glr, glf, w_array, wn2, eta_wn2, Vr, modes):
+            # Initialize the result for this pair
+            Hv_glr_glf = np.zeros_like(w_array, dtype=complex)
+            
+            # Calculate the denominator and FRF for each mode
+            for k in range(modes):
+                # Vectorized calculation of the denominator for all frequencies
+                den = (1j * w_array) / (wn2[k] - w_array**2 + 1j * eta_wn2[k])
+                
+                # Compute the FRF and add the contribution for mode `k`
+                Hv_glr_glf += Vr[glr, k] * Vr[glf, k] * den
+            
+            return Hv_glr_glf, glr, glf
+        # Preallocate the array to store the final Hv
+        Hv = np.zeros((nnode, nnode, len(w_array)), dtype=complex)
 
+        # Parallel computation of FRFs using joblib
+        results = Parallel(n_jobs=-2)(delayed(compute_FRF)(
+            glr, glf, w_array, wn2, eta_wn2, Vr, modes) for glr in np.arange(nnode) for glf in np.arange(nnode))
+
+        # Aggregate the results back into Hv
+        for Hv_glr_glf, glr, glf in results:
+            Hv[glr, glf, :] = Hv_glr_glf
         
-        for n_U0, U0 in enumerate([44.7]):
+        for n_U0, U0 in enumerate([44.7, 89.4, 178.8]):
             Re_d = 8 * U0*d_/v_air
             tau_w = (0.0225 * rho_air * U0**2)/(Re_d**0.25)
             # Pré-computando constantes fora dos loops
@@ -207,14 +220,16 @@ if __name__ == "__main__":
 
     # %% 
     eta = [0.5, 0.05, 0.005]
-    U0 = [44.7, 89.4, 178.8]
-    ii, jj = (1, 0)
+    U0  = [44.7, 89.4, 178.8]
+    #eta = [0.05]
+    #U0 = [44.7]
+    
     # %%
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.title(rf"Densidade de Auto Espectro - $ \eta={eta[1]}$")
-    plt.plot(10*np.log10(np.abs(psd[f'psd_{ii}_{0}']/2e-5**2)),'k')
-    plt.plot(10*np.log10(np.abs(psd[f'psd_{ii}_{1}']/2e-5**2)),'--k')
-    plt.plot(10*np.log10(np.abs(psd[f'psd_{ii}_{2}']/2e-5**2)),':k')
+    plt.plot(10*np.log10(np.abs(psd[f'psd_{1}_{0}']/2e-5**2)),'k')
+    plt.plot(10*np.log10(np.abs(psd[f'psd_{1}_{1}']/2e-5**2)),'--k')
+    plt.plot(10*np.log10(np.abs(psd[f'psd_{1}_{2}']/2e-5**2)),':k')
     plt.xlabel("Frequência [Hz]")
     plt.ylabel("PSD $(dB - ref\ 20 \mu Pa)$")
     plt.legend(U0)
