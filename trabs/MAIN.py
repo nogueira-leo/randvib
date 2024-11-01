@@ -49,7 +49,7 @@ if __name__ == "__main__":
     lx = 0.47 # Comprimento
     ly = 0.37 # Altura
 
-    tamanho_elemento = 0.02
+    tamanho_elemento = 0.005
     coord, connect, nodes_faceX1, nodes_faceX2, nodes_faceY1, nodes_faceY2, nodes_middle = msh.malha2D_QUAD4(lx,ly,tamanho_elemento)
     nnode = len(coord)
     nel = len(connect)
