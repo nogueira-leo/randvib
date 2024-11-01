@@ -20,10 +20,10 @@ def malha2D_QUAD4(lx,ly,size):
     #p3 = gmsh.model.geo.addPoint(lx, ly, 0, lc)
     #p4 = gmsh.model.geo.addPoint(0,  ly, 0, lc)
 
-    p1 = gmsh.model.geo.addPoint( 0 ,  0,  0, lc)
-    p2 = gmsh.model.geo.addPoint( lx,  0,  0, lc)
-    p3 = gmsh.model.geo.addPoint( lx, ly,  0, lc)
-    p4 = gmsh.model.geo.addPoint( 0 , ly,  0, lc)
+    p1 = gmsh.model.geo.addPoint( 0 ,  -ly/2,  0, lc)
+    p2 = gmsh.model.geo.addPoint( lx/2,  -ly/2,  0, lc)
+    p3 = gmsh.model.geo.addPoint( lx/2,   ly/2,  0, lc)
+    p4 = gmsh.model.geo.addPoint(-lx/2,   ly/2,  0, lc)
 
     l1 = gmsh.model.geo.addLine(p1, p2)
     l2 = gmsh.model.geo.addLine(p2, p3)

@@ -49,7 +49,7 @@ if __name__ == "__main__":
     lx = 0.47 # Comprimento
     ly = 0.37 # Altura
 
-    tamanho_elemento = 0.005
+    tamanho_elemento = 0.01
     coord, connect, nodes_faceX1, nodes_faceX2, nodes_faceY1, nodes_faceY2, nodes_middle = msh.malha2D_QUAD4(lx,ly,tamanho_elemento)
     nnode = len(coord)
     nel = len(connect)
@@ -75,13 +75,13 @@ if __name__ == "__main__":
     z_dofs = np.arange(2,5*nnode,5)
     fixed_dofs = fixed_dofs.astype(int)
     free_dofs = np.delete(all_dofs,fixed_dofs)
-    xy = 0.12
-    xx = 0.15
+    xy = -ly/2 + 0.12
+    xx = -lx/2 + 0.15
     size = tamanho_elemento
     
     check_node = np.where(
         (coord[:, 1] >= (xy)-(size/2)) & (coord[:, 1] <= (xy)+(size/2)) & (coord[:, 0] >= (xx)-(size/2)) & (coord[:, 0] <= (xx)+(size/2) )  # Dentro do intervalo y
-        )[0]
+    )[0]
     check_dof = check_node*5-2
     
     ###################### ASSEMBLY #################################
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     csd = pd.DataFrame(index=freq, dtype=complex)
     Vr = modal_shape[z_dofs,:]  # Modos normais
     wn = 2 * np.pi * natural_frequencies  # Frequências naturais (rad/s)
-    glf = check_node[0]  # Grau de liberdade da força
+    glf = check_node[1]  # Grau de liberdade da força
     w = 2 * np.pi * freq  # Frequências angulares
 
 
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     # %%
 
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[0]}$ - $\eta={eta[1]}$")
+    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[1]}$ - $\eta={eta[1]}$")
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{0}']/1e-9**2)), 'r')
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{2}']/1e-9**2)), ':r')
@@ -244,7 +244,7 @@ if __name__ == "__main__":
     plt.show()
     # %% 
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[0]}$ - $U_0={U0[1]} m/s$")
+    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[1]}$ - $U_0={U0[1]} m/s$")
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{0}_{1}']/1e-9**2)), 'r')
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{2}_{1}']/1e-9**2)), ':r')
@@ -268,41 +268,41 @@ if __name__ == "__main__":
 
     # %%
 
-    Gvvw_TBL = Gamma_TBL[check_node[0],:,:].T
-    Gvvw_DAF = Gamma_DAF[check_node[0],:,:].T
-    Gppw_TBL = Gpp_TBL[check_node[0],:,:].T
-    Gppw_DAF = Gpp_DAF[check_node[0],:,:].T
+    Gvvw_TBL = Gamma_TBL[check_node[1],:,:].T
+    Gvvw_DAF = Gamma_DAF[check_node[1],:,:].T
+    Gppw_TBL = Gpp_TBL[check_node[1],:,:].T
+    Gppw_DAF = Gpp_DAF[check_node[1],:,:].T
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.imshow(np.abs(Gvvw_TBL), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
-    plt.title(rf"Coerência Espacial do Nó ${check_node[0]}$ - TBL")
+    plt.title(rf"Coerência Espacial do Nó ${check_node[1]}$ - TBL")
     plt.xlabel('Id do Nó')
     plt.ylabel('Frequência (Hz)')
     plt.colorbar()
     plt.show()
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.imshow(np.abs(Gvvw_DAF), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
-    plt.title(rf"Coerência Espacial do Nó ${check_node[0]}$ - DAF")
+    plt.title(rf"Coerência Espacial do Nó ${check_node[1]}$ - DAF")
     plt.xlabel('Id do Nó')
     plt.ylabel('Frequência (Hz)')
     plt.colorbar()
     plt.show()
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.imshow(np.abs(Gppw_TBL), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
-    plt.title(rf"Densidade Espectral Cruzada do Nó ${check_node[0]}$ - TBL")
+    plt.title(rf"Densidade Espectral Cruzada do Nó ${check_node[1]}$ - TBL")
     plt.xlabel('Id do Nó')
     plt.ylabel('Frequência (Hz)')
     plt.colorbar()
     plt.show()
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.imshow(np.abs(Gppw_DAF), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
-    plt.title(rf"Densidade Espectral Cruzada do Nó ${check_node[0]}$ - DAF")
+    plt.title(rf"Densidade Espectral Cruzada do Nó ${check_node[1]}$ - DAF")
     plt.xlabel('Id do Nó')
     plt.ylabel('Frequência (Hz)')
     plt.colorbar()
     plt.show()
     # %%
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[0]}$ - $\eta={eta[1]}$")
+    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[1]}$ - $\eta={eta[1]}$")
     plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{0}']/1e-9**2)), 'r')
     plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
     plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{2}']/1e-9**2)), ':r')
@@ -321,9 +321,9 @@ if __name__ == "__main__":
 
     # %%
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"FRFs - do - Nó ${check_node[0]}$")
+    plt.title(rf"FRFs - do - Nó ${check_node[1]}$")
     plt.plot(freq,10*np.log10(np.abs(Hv.T)),'lightgray')
-    plt.plot(freq,10*np.log10(np.abs(Hv[check_node[0],:].T)),'k')
+    plt.plot(freq,10*np.log10(np.abs(Hv[check_node[1],:].T)),'k')
 
     plt.xlabel('Frequência (Hz)')
     plt.ylabel('Mobilidade (dB)')
