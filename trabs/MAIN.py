@@ -1,6 +1,6 @@
 # %%
 import numpy as np
-
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 import SHELL4 as fems4
 import SOLVE as solv
@@ -30,9 +30,9 @@ if __name__ == "__main__":
     
     
     # Propriedades
-    E = 210e9
-    rho = 8000
-    v = 0.3
+    E = 200e9
+    rho = 7850
+    v = 0.33
     alpha_x = 0.11
     alpha_y = 0.7
     rho_air =  1.1845
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     lx = 0.47 # Comprimento
     ly = 0.37 # Altura
 
-    tamanho_elemento = 0.005
+    tamanho_elemento = 0.01
     coord, connect, nodes_faceX1, nodes_faceX2, nodes_faceY1, nodes_faceY2, nodes_middle = msh.malha2D_QUAD4(lx,ly,tamanho_elemento)
     nnode = len(coord)
     nel = len(connect)
@@ -95,12 +95,12 @@ if __name__ == "__main__":
     print('Frequências Naturais:')
     print(natural_frequencies)
     # %%
-    freq = np.linspace(50,2000,300)
+    freq = np.linspace(50,2000,100)
     psd = pd.DataFrame(index=freq, dtype=float)
-    csd = pd.DataFrame(index=freq, dtype=complex)
+    csd = pd.DataFrame(index=freq, dtype=np.complex64)
     Vr = modal_shape[z_dofs,:]  # Modos normais
     wn = 2 * np.pi * natural_frequencies  # Frequências naturais (rad/s)
-    #glf = check_node[1]  # Grau de liberdade da força
+    #glf = check_node[0]  # Grau de liberdade da força
     w_array = 2 * np.pi * freq  # Frequências angulares
     k0_array = w_array/c0
 
@@ -110,27 +110,27 @@ if __name__ == "__main__":
     ksin = norm(np.stack((ksix,ksiy)),2,0)
     np.fill_diagonal(ksin,1)
     # %%
-    # Function to compute phi_pb for a specific frequency index kk
+    
     def compute_Gamma_DAF(kk,  k0,  ksin):
         Gamma = np.sin(k0 * ksin) / (k0 * ksin)
         return Gamma, kk
 
     # Preallocate arrays
-    Gamma_DAF = np.zeros((nnode, nnode, len(w_array)), dtype=complex)
+    Gamma_DAF = np.zeros((nnode, nnode, len(w_array)), dtype=np.complex64)
 
     # Parallel computation of phi_pb using joblib
     results_DAF = Parallel(n_jobs=-1)(delayed(compute_Gamma_DAF)(
         kk, k0, ksin) for kk, k0 in enumerate(k0_array))
 
     # Combine the results back into phi_pb
-    for Gamma, kk in results_DAF:
+    for Gamma, kk in tqdm(results_DAF):
         Gamma_DAF[:, :, kk] = Gamma
 
     #%%
-    for n_eta, eta in enumerate([0.5, 0.05, 0.005]):
+    for n_eta, eta in enumerate(tqdm([0.5, 0.05, 0.005])):
 
         # Inicializando as FRFs    
-        Hv = np.zeros((len(z_dofs), len(z_dofs), len(freq)), dtype=complex)
+        Hv = np.zeros((len(z_dofs), len(z_dofs), len(freq)), dtype=np.complex64)
         
         # Pré-calculando termos repetidos para otimização
         eta_wn2 = eta * wn**2  # Termo de amortecimento modal
@@ -139,7 +139,7 @@ if __name__ == "__main__":
         # Function to compute the FRF for a specific (glf, glr) pair
         def compute_FRF(glr, glf, w_array, wn2, eta_wn2, Vr, modes):
             # Initialize the result for this pair
-            Hv_glr_glf = np.zeros_like(w_array, dtype=complex)
+            Hv_glr_glf = np.zeros_like(w_array, dtype=np.complex64)
             
             # Calculate the denominator and FRF for each mode
             for k in range(modes):
@@ -151,17 +151,17 @@ if __name__ == "__main__":
             
             return Hv_glr_glf, glr, glf
         # Preallocate the array to store the final Hv
-        Hv = np.zeros((nnode, nnode, len(w_array)), dtype=complex)
+        Hv = np.zeros((nnode, nnode, len(w_array)), dtype=np.complex64)
 
         # Parallel computation of FRFs using joblib
         results = Parallel(n_jobs=-2)(delayed(compute_FRF)(
-            glr, glf, w_array, wn2, eta_wn2, Vr, modes) for glr in np.arange(nnode) for glf in np.arange(nnode))
+            glr, glf, w_array, wn2, eta_wn2, Vr, modes) for glr in np.arange(nnode) for glf in check_node)
 
         # Aggregate the results back into Hv
-        for Hv_glr_glf, glr, glf in results:
+        for Hv_glr_glf, glr, glf in tqdm(results):
             Hv[glr, glf, :] = Hv_glr_glf
         
-        for n_U0, U0 in enumerate([44.7, 89.4, 178.8]):
+        for n_U0, U0 in enumerate(tqdm([44.7, 89.4, 178.8])):
             Re_d = 8 * U0*d_/v_air
             tau_w = (0.0225 * rho_air * U0**2)/(Re_d**0.25)
             # Pré-computando constantes fora dos loops
@@ -173,7 +173,7 @@ if __name__ == "__main__":
             ksix = coord[:, None, 0] - coord[None, :, 0]  # Diferenças em x
             ksiy = coord[:, None, 1] - coord[None, :, 1]  # Diferenças em y
             Aij = (tamanho_elemento)**2  # Precomputando Aij fora do loop
-            Aij = 0.47*0.37  # Precomputando Aij fora do loop
+            Aij = 0.47*0.37/nnode  # Precomputando Aij fora do loop
             # Função paralelizada que será aplicada em cada frequência
             def compute_Gamma_TBL(kk, w, Uc, ksix, ksiy, alpha_x, alpha_y, Aij):
                 ksix_Uc = np.abs(w * ksix / Uc)
@@ -181,7 +181,7 @@ if __name__ == "__main__":
                 # Precomputando o termo Gamma
                 exp_x = np.exp(-alpha_x * ksix_Uc)  # Parte exponencial para ksix
                 exp_y = np.exp(-alpha_y * ksiy_Uc)  # Parte exponencial para ksiy
-                complex_exp = np.exp(1j * w * ksix / Uc)  # Parte exponencial complexa
+                complex_exp = np.exp(1j * w * ksix / Uc)  # Parte exponencial np.complex64a
 
                 Gamma = (1 + alpha_x * ksix_Uc) * exp_x * complex_exp * exp_y
                 return Gamma, kk
@@ -192,22 +192,22 @@ if __name__ == "__main__":
                 kk, w, Uc, ksix, ksiy, alpha_x, alpha_y, Aij) for kk, (w,  Uc) in enumerate(zip(w_array, Uc_array)))
 
             # Atualizando Gamma_w com os resultados paralelizados
-            Gamma_TBL = np.zeros((nnode,nnode,len(freq)), dtype=complex)   
-            for Gamma, kk in results_TBL:
+            Gamma_TBL = np.zeros((nnode,nnode,len(freq)), dtype=np.complex64)   
+            for Gamma, kk in tqdm(results_TBL):
                 Gamma_TBL[:,:,kk] = Gamma
 
             
 
              
-            Gvv_TBL = np.zeros_like(Gamma_DAF, dtype=complex)
-            Gvv_DAF = np.zeros_like(Gamma_DAF, dtype=complex)
-            Gpp_TBL = np.zeros_like(Gamma_DAF, dtype=complex)
-            Gpp_DAF = np.zeros_like(Gamma_DAF, dtype=complex)
+            Gvv_TBL = np.zeros_like(Gamma_DAF, dtype=np.complex64)
+            Gvv_DAF = np.zeros_like(Gamma_DAF, dtype=np.complex64)
+            Gpp_TBL = np.zeros_like(Gamma_DAF, dtype=np.complex64)
+            Gpp_DAF = np.zeros_like(Gamma_DAF, dtype=np.complex64)
 
             
-            for ii in range(len(freq)):
-                Gvv_TBL[:,:,ii] = np.conj(Hv[:,:,ii].T)@(phi_pp[ii]*Gamma_TBL[:,:,ii])@Hv[:,:,ii]*Aij**2
-                Gvv_DAF[:,:,ii] = np.conj(Hv[:,:,ii].T)@(phi_pp[ii]*Gamma_DAF[:,:,ii])@Hv[:,:,ii]*Aij**2
+            for ii in tqdm(range(len(freq))):
+                Gvv_TBL[:,:,ii] = np.conj(Hv[:,:,ii].T)@(phi_pp[ii]*Gamma_TBL[:,:,ii])@Hv[:,:,ii]*Aij
+                Gvv_DAF[:,:,ii] = np.conj(Hv[:,:,ii].T)@(phi_pp[ii]*Gamma_DAF[:,:,ii])@Hv[:,:,ii]*Aij
                 Gpp_TBL[:,:,ii] = phi_pp[ii]*Gamma_TBL[:,:,ii]
                 Gpp_DAF[:,:,ii] = phi_pp[ii]*Gamma_DAF[:,:,ii]
                 
@@ -215,8 +215,8 @@ if __name__ == "__main__":
 
             
             psd[f'psd_{n_eta}_{n_U0}'] = phi_pp
-            csd[f'TBL_{n_eta}_{n_U0}'] = Gvv_TBL[check_node[1], check_node[1],:]
-            csd[f'DAF_{n_eta}_{n_U0}'] = Gvv_DAF[check_node[1], check_node[1],:]
+            csd[f'TBL_{n_eta}_{n_U0}'] = Gvv_TBL[check_node[0], check_node[0],:]
+            csd[f'DAF_{n_eta}_{n_U0}'] = Gvv_DAF[check_node[0], check_node[0],:]
 
     # %% 
     eta = [0.5, 0.05, 0.005]
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     # %%
 
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[1]}$ - $\eta={eta[1]}$")
+    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[0]}$ - $\eta={eta[1]}$")
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{0}']/1e-9**2)), 'r')
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{2}']/1e-9**2)), ':r')
@@ -261,7 +261,7 @@ if __name__ == "__main__":
     plt.show()
     # %% 
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[1]}$ - $U_0={U0[1]} m/s$")
+    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[0]}$ - $U_0={U0[1]} m/s$")
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{0}_{1}']/1e-9**2)), 'r')
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
     plt.plot(10*np.log10(np.abs(csd[f'TBL_{2}_{1}']/1e-9**2)), ':r')
@@ -285,49 +285,55 @@ if __name__ == "__main__":
 
     # %%
 
-    Gvvw_TBL = Gamma_TBL[check_node[1],:,:].T
-    Gvvw_DAF = Gamma_DAF[check_node[1],:,:].T
-    Gppw_TBL = Gpp_TBL[check_node[1],:,:].T
-    Gppw_DAF = Gpp_DAF[check_node[1],:,:].T
+    Gvvw_TBL = Gamma_TBL[check_node[0],:,:].T
+    Gvvw_DAF = Gamma_DAF[check_node[0],:,:].T
+    Gppw_TBL = Gpp_TBL[check_node[0],:,:].T
+    Gppw_DAF = Gpp_DAF[check_node[0],:,:].T
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.imshow(np.abs(Gvvw_TBL), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
-    plt.title(rf"Coerência Espacial do Nó ${check_node[1]}$ - TBL")
+    plt.title(rf"Coerência Espacial do Nó ${check_node[0]}$ - TBL")
     plt.xlabel('Id do Nó')
     plt.ylabel('Frequência (Hz)')
     plt.colorbar()
     plt.show()
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.imshow(np.abs(Gvvw_DAF), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
-    plt.title(rf"Coerência Espacial do Nó ${check_node[1]}$ - DAF")
+    plt.title(rf"Coerência Espacial do Nó ${check_node[0]}$ - DAF")
     plt.xlabel('Id do Nó')
     plt.ylabel('Frequência (Hz)')
     plt.colorbar()
     plt.show()
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.imshow(np.abs(Gppw_TBL), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
-    plt.title(rf"Densidade Espectral Cruzada do Nó ${check_node[1]}$ - TBL")
+    plt.title(rf"Densidade Espectral Cruzada do Nó ${check_node[0]}$ - TBL")
     plt.xlabel('Id do Nó')
     plt.ylabel('Frequência (Hz)')
     plt.colorbar()
     plt.show()
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.imshow(np.abs(Gppw_DAF), origin='lower', extent=(1, nnode+1, freq[0], freq[-1]), aspect='auto')
-    plt.title(rf"Densidade Espectral Cruzada do Nó ${check_node[1]}$ - DAF")
+    plt.title(rf"Densidade Espectral Cruzada do Nó ${check_node[0]}$ - DAF")
     plt.xlabel('Id do Nó')
     plt.ylabel('Frequência (Hz)')
     plt.colorbar()
     plt.show()
     # %%
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[1]}$ - $\eta={eta[1]}$")
-    plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{0}']/1e-9**2)), 'r')
-    plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
-    plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{2}']/1e-9**2)), ':r')
+    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[0]}$ - $\eta={eta[1]}$")
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{0}']/1e-9**2)), 'r')
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{2}']/1e-9**2)), ':r')
     plt.plot(f_0, 10*np.log10(np.abs(Gvv_0/1e-9**2)), 'g')
     plt.plot(f_1, 10*np.log10(np.abs(Gvv_1/1e-9**2)), '--g')
     plt.plot(f_2, 10*np.log10(np.abs(Gvv_2/1e-9**2)), ':g')
     plt.xlabel('Frequência (Hz)')
     plt.ylabel('CSD (dB ref $1nm$) ')
+    plt.legend([rf"Nogueira - $\eta = {eta[1]}, U_0 = {U0[0]}$",
+                rf"Nogueira - $\eta = {eta[1]}, U_0 = {U0[1]}$",
+                rf"Nogueira - $\eta = {eta[1]}, U_0 = {U0[2]}$",
+                rf"Hambric - $\eta = {eta[1]}, U_0 = {U0[0]}$",
+                rf"Hambric - $\eta = {eta[1]}, U_0 = {U0[1]}$",
+                rf"Hambric - $\eta = {eta[1]}, U_0 = {U0[2]}$"])
     plt.grid(True)
     plt.show()
 
@@ -338,9 +344,9 @@ if __name__ == "__main__":
 
     # %%
     #plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    #plt.title(rf"FRFs - do - Nó ${check_node[1]}$")
+    #plt.title(rf"FRFs - do - Nó ${check_node[0]}$")
     #plt.plot(freq,10*np.log10(np.abs(Hv.T)),'lightgray')
-    #plt.plot(freq,10*np.log10(np.abs(Hv[check_node[1],:].T)),'k')
+    #plt.plot(freq,10*np.log10(np.abs(Hv[check_node[0],:].T)),'k')
 #
     #plt.xlabel('Frequência (Hz)')
     #plt.ylabel('Mobilidade (dB)')
