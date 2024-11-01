@@ -49,7 +49,11 @@ if __name__ == "__main__":
     lx = 0.47 # Comprimento
     ly = 0.37 # Altura
 
+<<<<<<< HEAD
     tamanho_elemento = 0.01
+=======
+    tamanho_elemento = 0.005
+>>>>>>> 3503b94 (discretization)
     coord, connect, nodes_faceX1, nodes_faceX2, nodes_faceY1, nodes_faceY2, nodes_middle = msh.malha2D_QUAD4(lx,ly,tamanho_elemento)
     nnode = len(coord)
     nel = len(connect)
