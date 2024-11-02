@@ -103,7 +103,7 @@ if __name__ == "__main__":
     print('Frequências Naturais:')
     print(natural_frequencies)
     # %%
-    freq = np.linspace(50,2000,100)
+    freq = np.linspace(50,2000,150)
     psd = pd.DataFrame(index=freq, dtype=float)
     csd = pd.DataFrame(index=freq, dtype=np.complex64)
     Vr = modal_shape[z_dofs,:]  # Modos normais
@@ -261,7 +261,9 @@ if __name__ == "__main__":
     plt.plot(10*np.log10(np.abs(psd[f'psd_{1}_{2}']/2e-5**2)),':k')
     plt.xlabel("Frequência [Hz]")
     plt.ylabel("PSD $(dB - ref\ 20 \mu Pa)$")
-    plt.legend(U0)
+    plt.legend([rf'$U_o = {U0[0]} m/s$',
+                rf'$U_o = {U0[1]} m/s$',
+                rf'$U_o = {U0[2]} m/s$'], loc='upper right')
     #plt.ylim(84.55,84.60)
     plt.grid(True, which='both')
     plt.show()
@@ -280,12 +282,12 @@ if __name__ == "__main__":
     plt.plot(10*np.log10(np.abs(csd[f'DAF_{1}_{2}']/1e-9**2)), ':b')
     plt.xlabel("Frequência (Hz)")
     plt.ylabel("CSD (dB ref $1nm$) ")
-    plt.legend([f"TBL - $U_0 = {U0[0]} m/s$",
-                f"TBL - $U_0 = {U0[1]} m/s$",
-                f"TBL - $U_0 = {U0[2]} m/s$",
-                f"DAF - $U_0 = {U0[0]} m/s$",
-                f"DAF - $U_0 = {U0[1]} m/s$",
-                f"DAF - $U_0 = {U0[2]} m/s$"])
+    plt.legend([f"TBL - $ U_0 = {U0[0]} m/s $",
+                f"TBL - $ U_0 = {U0[1]} m/s $",
+                f"TBL - $ U_0 = {U0[2]} m/s $",
+                f"DAF - $ U_0 = {U0[0]} m/s $",
+                f"DAF - $ U_0 = {U0[1]} m/s $",
+                f"DAF - $ U_0 = {U0[2]} m/s $"])
     plt.grid(True, which='both')
     plt.show()
     # %% 
@@ -357,12 +359,12 @@ if __name__ == "__main__":
     plt.plot(f_2, 10*np.log10(np.abs(Gvv_2/1e-9**2)), ':g')
     plt.xlabel('Frequência (Hz)')
     plt.ylabel('CSD (dB ref $1nm$) ')
-    plt.legend([rf"Nogueira - $\eta = {eta[1]}, U_0 = {U0[0]}$",
-                rf"Nogueira - $\eta = {eta[1]}, U_0 = {U0[1]}$",
-                rf"Nogueira - $\eta = {eta[1]}, U_0 = {U0[2]}$",
-                rf"Hambric - $\eta = {eta[1]}, U_0 = {U0[0]}$",
-                rf"Hambric - $\eta = {eta[1]}, U_0 = {U0[1]}$",
-                rf"Hambric - $\eta = {eta[1]}, U_0 = {U0[2]}$"])
+    plt.legend([rf"Nogueira - $\eta = {eta[1]}, U_0 = {U0[0]} m/s$",
+                rf"Nogueira - $\eta = {eta[1]}, U_0 = {U0[1]} m/s$",
+                rf"Nogueira - $\eta = {eta[1]}, U_0 = {U0[2]} m/s$",
+                rf"Hambric -  $\eta = {eta[1]}, U_0 = {U0[0]} m/s$",
+                rf"Hambric -  $\eta = {eta[1]}, U_0 = {U0[1]} m/s$",
+                rf"Hambric -  $\eta = {eta[1]}, U_0 = {U0[2]} m/s$"])
     plt.grid(True)
     plt.show()
 
@@ -372,6 +374,7 @@ if __name__ == "__main__":
 
 
     # %%
+<<<<<<< HEAD
 <<<<<<< HEAD
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.title(rf"FRFs - do - Nó ${check_node[0]}$")
@@ -391,4 +394,19 @@ if __name__ == "__main__":
     #plt.ylabel('Mobilidade (dB)')
     #plt.show()
 >>>>>>> 10da5ea (try out)
+=======
+    plt.figure(figsize=(16,9), dpi=200, layout='tight')
+    plt.title(rf"FRFs - do - Nó ${check_node[0]}$")
+    plt.plot(freq,10*np.log10(np.abs(np.sum(Hv[:,check_node[0],:].T, axis=1))),'k')
+    plt.plot(freq,10*np.log10(np.abs(Hv[check_node[0],check_node[0],:].T)),'--k')
+    plt.plot(freq,10*np.log10(np.abs(Hv[:,check_node[0],:].T)),'lightgray')
+    plt.plot(freq,10*np.log10(np.abs(Hv[check_node[0],check_node[0],:].T)),'--k')
+    plt.xlabel('Frequência (Hz)')
+    plt.ylabel('Mobilidade (dB)')
+    plt.legend([rf'Soma das FRFs',
+                rf'FRF Pontual',
+                rf'FRFs de Transferência'])
+    plt.grid(True)	
+    plt.show()
+>>>>>>> 497c077 (c'est finni)
 # %%

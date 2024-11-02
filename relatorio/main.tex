@@ -93,7 +93,23 @@ turbulent boundary layer flow.", fornecido junto com o trabalho apresenta uma an
 vibratória de uma placa submetida a uma excitação na forma de uma camada limite turbulenta (TBL -
 Turbulent Boundary Layer). O artigo examina diferentes condições de contorno para a placa e algumas
 simplificações para o modelo de TBL empregado (modelo de Corcos).
-De forma similar, o artigo Marcheto et al 2017, "Vibroacoustic response of panels under diffuse acousticfield excitation from sensitivity functions and reciprocityprinciples" examina a resposta vibratória de um painel submetido a uma excitação aleatória distribuída na forma de um Campo Acústico Difuso. Com base nos artigos e utilizando o código em MatLab fornecido com um modelo de placa em FEM, faça:
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\columnwidth]{figures/schema_TBL.png}
+	\caption{Esquemático do Artigo de Hambric}
+	\label{fig:schmtbl}
+\end{figure}
+
+De forma similar, o artigo Marcheto et al 2017, "Vibroacoustic response of panels under diffuse acousticfield excitation from sensitivity functions and reciprocityprinciples" examina a resposta vibratória de um painel submetido a uma excitação aleatória distribuída na forma de um Campo Acústico Difuso. 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\columnwidth]{figures/schema_DAF.png}
+	\caption{Esquemático do Artiho de Machetto}
+	\label{fig:schmdaf}
+\end{figure}
+
+
+Com base nos artigos e utilizando o código em MatLab fornecido com um modelo de placa em FEM, faça:
 
 \begin{enumerate}
 	\item  Reproduza os resultados do artigo Hambric et al 2004 para a condição analisada com uma borda livre;
@@ -122,6 +138,7 @@ Calculando-se o auto espectro da pressão acústica para as velocidades de fluxo
 	\caption{Autoespectro de Entrada}
 	\label{fig:psd}
 \end{figure}
+Não foi observada significante alteração do comportamento com a variação de amortecimento $\eta$.
 
 \subsection{Coerência}
 
@@ -138,7 +155,7 @@ O próximo passo é encontrar o espectro da coerência $\Gamma(\xi_1,\xi_3,\omeg
 	A(\omega\xi_1/U_c)=(1+\alpha_1|\omega\xi_1/U_c|)\mathrm{e}^{-\alpha_1|\omega\xi_1/U_c|}\mathrm{e}^{\mathrm{i}\omega\xi_1/U_c} \\
 	B(\omega\xi_3/U_c)=\mathrm{e}^{-\alpha_3|\omega\xi_3/U_c|}
 \end{eqnarray}
-O artigo de Hambric~\cite{hambricVibrationsPlatesClamped2004} define como ponto de observação o ponto de coordenadas $(15cm, 12cm)$ a partir do vértice inferior a esquerda, que no caso do modelo em Elementos Finitos desenvolvido neste trabalho é o nó 227. A coerência do nó 227 em relação a todos os nós em função da frequência pode ser observado na Figura~\ref{fig:coerTBL}
+O artigo de Hambric~\cite{hambricVibrationsPlatesClamped2004} define como ponto de observação o ponto de coordenadas $(15cm, 12cm)$ a partir do vértice inferior a esquerda, que no caso do modelo em Elementos Finitos desenvolvido neste trabalho é o nó 227. A coerência do nó 701 em relação a todos os nós em função da frequência pode ser observado na Figura~\ref{fig:coerTBL}
 
 \begin{figure}[H]
 	\centering
@@ -151,7 +168,7 @@ O artigo de Marchetto~\cite{marchettoVibroacousticResponsePanels2017} que analis
 \begin{equation}
 	S_{pp}(r,\omega) = S_{pp}(\omega) \frac{sin(k_0r)}{k_0r},
 \end{equation}
-onde $S_{pp}(\omega)$ é o auto espectro da pressão. Logo o termo representando a coerência espacial em função da frequência é $\Gamma(r,\omega) = \frac{sin(k_0r)}{k_0r}$, sendo $r = |x_\mu - x_v|$. A coerência do campo difuso pode ser observada na Figura~\ref{fig:coerDAF}.
+onde $S_{pp}(\omega)$ é o auto espectro da pressão. Logo o termo representando a coerência espacial em função da frequência é $\Gamma(r,\omega) = \frac{sin(k_0r)}{k_0r}$, sendo $r = |x_\mu - x_v| = |(\xi_1,\xi_3)|$. A coerência do campo difuso pode ser observada na Figura~\ref{fig:coerDAF}.
 
 \begin{figure}[H]
 	\centering
@@ -185,7 +202,7 @@ Torna-se evidente a diferença entre a densidade espectral cruzada entre os caso
 Para encontrarmos as respostas a partir da entrada em pressão  deve-se deterinar as FRFs em relação ao ponto deobservação no nó 227.
 
 \begin{equation}
-	H_v = 
+	H_v = \frac{-j\omega}{\omega_n^2-\omega^2+j\eta\omega_n^2}
 \end{equation}
 \begin{figure}[H]
 	\centering
