@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.6.9)  27 OCT 2024 13:10
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.6.9)  2 NOV 2024 12:42
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1998,22 +1998,34 @@ LaTeX Font Info:    Font shape `T1/phv/m/n' will be
 (Font)              scaled to size 9.49997pt on input line 90.
 LaTeX Font Info:    Font shape `T1/phv/b/n' will be
 (Font)              scaled to size 9.49997pt on input line 90.
+<figures/schema_TBL.png, id=6, 674.52pt x 307.1475pt>
+File: figures/schema_TBL.png Graphic file (type png)
+<use figures/schema_TBL.png>
+Package pdftex.def Info: figures/schema_TBL.png  used on input line 98.
+(pdftex.def)             Requested size: 230.11763pt x 104.78494pt.
+LaTeX Font Info:    Font shape `T1/phv/b/n' will be
+(Font)              scaled to size 7.59998pt on input line 99.
+<figures/schema_DAF.png, id=8, 393.72093pt x 204.765pt>
+File: figures/schema_DAF.png Graphic file (type png)
+<use figures/schema_DAF.png>
+Package pdftex.def Info: figures/schema_DAF.png  used on input line 106.
+(pdftex.def)             Requested size: 230.11763pt x 119.6761pt.
 LaTeX Font Info:    Trying to load font information for LS1+stix2scr on input l
-ine 107.
+ine 123.
 
 (C:\Users\nogue\AppData\Local\Programs\MiKTeX\tex/fonts/stix2-type1\ls1stix2scr
 .fd
 File: ls1stix2scr.fd 2018/04/02 v2.0.0-latex stix2 script LS1 font definitions
 )
 LaTeX Font Info:    Trying to load font information for LS2+stix2ex on input li
-ne 107.
+ne 123.
 
 (C:\Users\nogue\AppData\Local\Programs\MiKTeX\tex/fonts/stix2-type1\ls2stix2ex.
 fd
 File: ls2stix2ex.fd 2018/04/02 v2.0.0-latex stix2 extentions LS2 font definitio
 ns
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 107
+LaTeX Font Info:    Trying to load font information for U+msa on input line 123
 .
  (C:\Users\nogue\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
@@ -2021,7 +2033,7 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 (C:\Users\nogue\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 107
+LaTeX Font Info:    Trying to load font information for U+msb on input line 123
 .
 
 (C:\Users\nogue\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
@@ -2031,7 +2043,7 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
 LaTeX Font Info:    Trying to load font information for LS1+stix2frak on input 
-line 107.
+line 123.
 
 (C:\Users\nogue\AppData\Local\Programs\MiKTeX\tex/fonts/stix2-type1\ls1stix2fra
 k.fd
@@ -2039,7 +2051,7 @@ File: ls1stix2frak.fd 2018/04/02 v2.0.0-latex stix2 fraktur LS1 font definition
 s
 )
 LaTeX Font Info:    Trying to load font information for LS1+stix2bb on input li
-ne 107.
+ne 123.
 
 (C:\Users\nogue\AppData\Local\Programs\MiKTeX\tex/fonts/stix2-type1\ls1stix2bb.
 fd
@@ -2047,7 +2059,7 @@ File: ls1stix2bb.fd 2018/04/02 v2.0.0-latex stix2 blackboard LS1 font definitio
 ns
 )
 LaTeX Font Info:    Trying to load font information for LS2+stix2cal on input l
-ine 107.
+ine 123.
 
 (C:\Users\nogue\AppData\Local\Programs\MiKTeX\tex/fonts/stix2-type1\ls2stix2cal
 .fd
@@ -2055,7 +2067,7 @@ File: ls2stix2cal.fd 2018/04/02 v2.0.0-latex stix2 calligraphic LS2 font defini
 tions
 )
 LaTeX Font Info:    Trying to load font information for LS1+stix2sf on input li
-ne 107.
+ne 123.
 
 (C:\Users\nogue\AppData\Local\Programs\MiKTeX\tex/fonts/stix2-type1\ls1stix2sf.
 fd
@@ -2063,45 +2075,32 @@ File: ls1stix2sf.fd 2018/04/02 v2.0.0-latex stix2 sans-serif LS1 font definitio
 ns
 )
 LaTeX Font Info:    Trying to load font information for LS2+stix2tt on input li
-ne 107.
+ne 123.
 
 (C:\Users\nogue\AppData\Local\Programs\MiKTeX\tex/fonts/stix2-type1\ls2stix2tt.
 fd
 File: ls2stix2tt.fd 2018/04/02 v2.0.0-latex stix2 typewriter LS2 font definitio
 ns
 )
-<figures/psd_vel.png, id=9, 693.792pt x 352.31625pt>
+
+<figures/psd_vel.png, id=12, 693.792pt x 352.31625pt>
 File: figures/psd_vel.png Graphic file (type png)
 <use figures/psd_vel.png>
-Package pdftex.def Info: figures/psd_vel.png  used on input line 121.
+Package pdftex.def Info: figures/psd_vel.png  used on input line 137.
 (pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
-LaTeX Font Info:    Font shape `T1/phv/b/n' will be
-(Font)              scaled to size 7.59998pt on input line 122.
-
-
-<figures/coer_TBL.png, id=13, 693.792pt x 352.31625pt>
+<figures/coer_TBL.png, id=15, 693.792pt x 352.31625pt>
 File: figures/coer_TBL.png Graphic file (type png)
 <use figures/coer_TBL.png>
-Package pdftex.def Info: figures/coer_TBL.png  used on input line 145.
-(pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
-<figures/coer_DAF.png, id=16, 693.792pt x 352.31625pt>
-File: figures/coer_DAF.png Graphic file (type png)
-<use figures/coer_DAF.png>
-Package pdftex.def Info: figures/coer_DAF.png  used on input line 158.
-(pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
-<figures/csd_TBL.png, id=19, 693.792pt x 352.31625pt>
-File: figures/csd_TBL.png Graphic file (type png)
-<use figures/csd_TBL.png>
-Package pdftex.def Info: figures/csd_TBL.png  used on input line 172.
+Package pdftex.def Info: figures/coer_TBL.png  used on input line 162.
 (pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
 
 
 LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 6.64998pt on input line 176.
+(Font)              scaled to size 6.64998pt on input line 168.
 LaTeX Font Info:    Font shape `T1/phv/b/n' will be
-(Font)              scaled to size 6.64998pt on input line 176.
+(Font)              scaled to size 6.64998pt on input line 168.
 LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 4.74998pt on input line 176.
+(Font)              scaled to size 4.74998pt on input line 168.
 [1{C:/Users/nogue/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/no
 gue/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}
 
@@ -2110,30 +2109,37 @@ gue/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc}
 -t1.enc}{C:/Users/nogue/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/stix2-typ
 e1/stix2-mathrm.enc}{C:/Users/nogue/AppData/Local/Programs/MiKTeX/fonts/enc/dvi
 ps/stix2-type1/stix2-mathit.enc}{C:/Users/nogue/AppData/Local/Programs/MiKTeX/f
-onts/enc/dvips/stix2-type1/stix2-mathex.enc} <./figures/psd_vel.png> <./figures
-/coer_TBL.png> <./figures/coer_DAF.png>]
-<figures/csd_DAF.png, id=55, 693.792pt x 352.31625pt>
+onts/enc/dvips/stix2-type1/stix2-mathex.enc} <./figures/schema_TBL.png> <./figu
+res/schema_DAF.png> <./figures/psd_vel.png> <./figures/coer_TBL.png>]
+<figures/coer_DAF.png, id=54, 693.792pt x 352.31625pt>
+File: figures/coer_DAF.png Graphic file (type png)
+<use figures/coer_DAF.png>
+Package pdftex.def Info: figures/coer_DAF.png  used on input line 175.
+(pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
+<figures/csd_TBL.png, id=57, 693.792pt x 352.31625pt>
+File: figures/csd_TBL.png Graphic file (type png)
+<use figures/csd_TBL.png>
+Package pdftex.def Info: figures/csd_TBL.png  used on input line 189.
+(pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
+<figures/csd_DAF.png, id=58, 693.792pt x 352.31625pt>
 File: figures/csd_DAF.png Graphic file (type png)
 <use figures/csd_DAF.png>
-Package pdftex.def Info: figures/csd_DAF.png  used on input line 179.
+Package pdftex.def Info: figures/csd_DAF.png  used on input line 196.
 (pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
-<figures/frfs.png, id=56, 693.792pt x 352.31625pt>
+
+
+<figures/frfs.png, id=59, 693.792pt x 352.31625pt>
 File: figures/frfs.png Graphic file (type png)
 <use figures/frfs.png>
-Package pdftex.def Info: figures/frfs.png  used on input line 192.
+Package pdftex.def Info: figures/frfs.png  used on input line 209.
 (pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
-<figures/csd_comp.png, id=57, 693.792pt x 352.31625pt>
+<figures/csd_comp.png, id=60, 693.792pt x 352.31625pt>
 File: figures/csd_comp.png Graphic file (type png)
 <use figures/csd_comp.png>
-Package pdftex.def Info: figures/csd_comp.png  used on input line 199.
+Package pdftex.def Info: figures/csd_comp.png  used on input line 216.
 (pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
 
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
-
-
-Overfull \hbox (16.21242pt too wide) detected at line 208
+Overfull \hbox (16.21242pt too wide) detected at line 225
 [][][]\LS1/stix2/m/it/9 G[]\LS1/stix2/m/n/9 .\LS1/stix2/m/it/9 y[]; y[]; !\LS1/
 stix2/m/n/9 / ö [] [] \LS1/stix2/m/it/9 H[]\LS1/stix2/m/n/9 .\LS1/stix2/m/it/9 
 y[]\LS1/stix2/m/n/9 _\LS1/stix2/m/it/9 x[]; !\LS1/stix2/m/n/9 /\LS1/stix2/m/it/
@@ -2142,18 +2148,27 @@ y[]\LS1/stix2/m/n/9 _\LS1/stix2/m/it/9 x[]; !\LS1/stix2/m/n/9 /\LS1/stix2/m/it/
 S1/stix2/m/it/9 x[]; !\LS1/stix2/m/n/9 /
  []
 
-<figures/csd_vel.png, id=58, 693.792pt x 352.31625pt>
+<figures/csd_vel.png, id=61, 693.792pt x 352.31625pt>
 File: figures/csd_vel.png Graphic file (type png)
 <use figures/csd_vel.png>
-Package pdftex.def Info: figures/csd_vel.png  used on input line 217.
+Package pdftex.def Info: figures/csd_vel.png  used on input line 234.
 (pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
-<figures/csd_eta.png, id=59, 693.792pt x 352.31625pt>
+<figures/csd_eta.png, id=62, 693.792pt x 352.31625pt>
 File: figures/csd_eta.png Graphic file (type png)
 <use figures/csd_eta.png>
-Package pdftex.def Info: figures/csd_eta.png  used on input line 224.
+Package pdftex.def Info: figures/csd_eta.png  used on input line 241.
 (pdftex.def)             Requested size: 230.11763pt x 116.85606pt.
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+
+[2{C:/Users/nogue/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/stix2-type1/sti
+x2-mathrm-bold.enc} <./figures/coer_DAF.png> <./figures/csd_TBL.png> <./figures
+/csd_DAF.png> <./figures/frfs.png> <./figures/csd_comp.png> <./figures/csd_vel.
+png>]
 LaTeX Font Info:    Trying to load font information for TS1+stix2 on input line
- 232.
+ 249.
 
 (C:\Users\nogue\AppData\Local\Programs\MiKTeX\tex/fonts/stix2-type1\ts1stix2.fd
 File: ts1stix2.fd 2018/04/02 v2.0.0-latex stix2 TS1 font definitions
@@ -2163,12 +2178,13 @@ Package microtype Info: Character `textflorin ' is missing
 (microtype)             Ignoring protrusion settings for this character.
 
 
-[2{C:/Users/nogue/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/stix2-type1/sti
-x2-mathrm-bold.enc}{C:/Users/nogue/AppData/Local/Programs/MiKTeX/fonts/enc/dvip
-s/stix2-type1/stix2-ts1.enc}{C:/Users/nogue/AppData/Local/Programs/MiKTeX/fonts
-/enc/dvips/stix2-type1/stix2-t1sc.enc} <./figures/csd_TBL.png> <./figures/csd_D
-AF.png> <./figures/frfs.png> <./figures/csd_comp.png> <./figures/csd_vel.png> <
-./figures/csd_eta.png>]
+
+
+[3{C:/Users/nogue/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/stix2-type1/sti
+x2-ts1.enc}{C:/Users/nogue/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/stix2-
+type1/stix2-t1sc.enc}
+
+ <./figures/csd_eta.png>]
 
 enddocument/afterlastpage: lastpage setting LastPage.
 (main.aux)
@@ -2181,10 +2197,10 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 68588 strings out of 473938
- 1506399 string characters out of 5727392
- 2653733 words of memory out of 5000000
- 90386 multiletter control sequences out of 15000+600000
+ 68609 strings out of 473938
+ 1506907 string characters out of 5727392
+ 2651926 words of memory out of 5000000
+ 90404 multiletter control sequences out of 15000+600000
  658229 words of font info for 184 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  137i,16n,143p,2055b,1648s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -2194,9 +2210,9 @@ stix2-type1/STIX2Text-Italic.pfb><C:/Users/nogue/AppData/Local/Programs/MiKTeX/
 fonts/type1/public/stix2-type1/STIX2Text-Regular.pfb><C:/Users/nogue/AppData/Lo
 cal/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvb8a.pfb><C:/Users/nogue/AppData
 /Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvr8a.pfb>
-Output written on main.pdf (2 pages, 3825998 bytes).
+Output written on main.pdf (3 pages, 4080928 bytes).
 PDF statistics:
- 159 PDF objects out of 1000 (max. 8388607)
- 34 named destinations out of 1000 (max. 500000)
- 47210 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 172 PDF objects out of 1000 (max. 8388607)
+ 37 named destinations out of 1000 (max. 500000)
+ 47220 words of extra memory for PDF output out of 51595 (max. 10000000)
 
