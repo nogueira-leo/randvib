@@ -49,15 +49,8 @@ if __name__ == "__main__":
     lx = 0.47 # Comprimento
     ly = 0.37 # Altura
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     tamanho_elemento = 0.01
-=======
-    tamanho_elemento = 0.005
->>>>>>> 3503b94 (discretization)
-=======
-    tamanho_elemento = 0.01
->>>>>>> 1726554 (tam elem)
+
     coord, connect, nodes_faceX1, nodes_faceX2, nodes_faceY1, nodes_faceY2, nodes_middle = msh.malha2D_QUAD4(lx,ly,tamanho_elemento)
     nnode = len(coord)
     nel = len(connect)
@@ -108,17 +101,12 @@ if __name__ == "__main__":
     csd = pd.DataFrame(index=freq, dtype=np.complex64)
     Vr = modal_shape[z_dofs,:]  # Modos normais
     wn = 2 * np.pi * natural_frequencies  # Frequências naturais (rad/s)
-<<<<<<< HEAD
+
     glf = check_node[0]  # Grau de liberdade da força
     w = 2 * np.pi * freq  # Frequências angulares
-=======
-    #glf = check_node[1]  # Grau de liberdade da força
     w_array = 2 * np.pi * freq  # Frequências angulares
-<<<<<<< HEAD
->>>>>>> 10da5ea (try out)
-=======
     k0_array = w_array/c0
->>>>>>> 6c7b5bc (not ok)
+
 
     # Diferenças de coordenadas
     ksix = coord[:, None, 0] - coord[None, :, 0]  # Diferenças em x
@@ -214,7 +202,7 @@ if __name__ == "__main__":
 
             
 
-<<<<<<< HEAD
+
             # Preallocate arrays
             Gamma_DAF = np.zeros((nnode, nnode, len(w_array)), dtype=complex)
 
@@ -225,9 +213,7 @@ if __name__ == "__main__":
             # Combine the results back into phi_pb
             for Gamma, kk in results_DAF:
                 Gamma_DAF[:, :, kk] = Gamma
-=======
->>>>>>> 10da5ea (try out)
-             
+
             Gvv_TBL = np.zeros_like(Gamma_DAF, dtype=np.complex64)
             Gvv_DAF = np.zeros_like(Gamma_DAF, dtype=np.complex64)
             Gpp_TBL = np.zeros_like(Gamma_DAF, dtype=np.complex64)
@@ -350,10 +336,10 @@ if __name__ == "__main__":
     plt.show()
     # %%
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[1]}$ - $\eta={eta[1]}$")
-    plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{0}']/1e-9**2)), 'r')
-    plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
-    plt.plot(10*np.log10(np.abs((Aij/8)**2*csd[f'TBL_{1}_{2}']/1e-9**2)), ':r')
+    plt.title(rf"Densidade Espectral Crusada - Nó ${check_node[0]}$ - $\eta={eta[1]}$")
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{0}']/1e-9**2)), 'r')
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{1}']/1e-9**2)), '--r')
+    plt.plot(10*np.log10(np.abs(csd[f'TBL_{1}_{2}']/1e-9**2)), ':r')
     plt.plot(f_0, 10*np.log10(np.abs(Gvv_0/1e-9**2)), 'g')
     plt.plot(f_1, 10*np.log10(np.abs(Gvv_1/1e-9**2)), '--g')
     plt.plot(f_2, 10*np.log10(np.abs(Gvv_2/1e-9**2)), ':g')
@@ -374,33 +360,19 @@ if __name__ == "__main__":
 
 
     # %%
-<<<<<<< HEAD
-<<<<<<< HEAD
+
     plt.figure(figsize=(16,9), dpi=200, layout='tight')
     plt.title(rf"FRFs - do - Nó ${check_node[0]}$")
+
     plt.plot(freq,10*np.log10(np.abs(Hv.T)),'lightgray')
     plt.plot(freq,10*np.log10(np.abs(Hv[check_node[0],:].T)),'k')
 
-    plt.xlabel('Frequência (Hz)')
-    plt.ylabel('Mobilidade (dB)')
-    plt.show()
-=======
-    #plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    #plt.title(rf"FRFs - do - Nó ${check_node[0]}$")
-    #plt.plot(freq,10*np.log10(np.abs(Hv.T)),'lightgray')
-    #plt.plot(freq,10*np.log10(np.abs(Hv[check_node[0],:].T)),'k')
-#
-    #plt.xlabel('Frequência (Hz)')
-    #plt.ylabel('Mobilidade (dB)')
-    #plt.show()
->>>>>>> 10da5ea (try out)
-=======
-    plt.figure(figsize=(16,9), dpi=200, layout='tight')
-    plt.title(rf"FRFs - do - Nó ${check_node[0]}$")
+
     plt.plot(freq,10*np.log10(np.abs(np.sum(Hv[:,check_node[0],:].T, axis=1))),'k')
     plt.plot(freq,10*np.log10(np.abs(Hv[check_node[0],check_node[0],:].T)),'--k')
     plt.plot(freq,10*np.log10(np.abs(Hv[:,check_node[0],:].T)),'lightgray')
     plt.plot(freq,10*np.log10(np.abs(Hv[check_node[0],check_node[0],:].T)),'--k')
+
     plt.xlabel('Frequência (Hz)')
     plt.ylabel('Mobilidade (dB)')
     plt.legend([rf'Soma das FRFs',
@@ -408,5 +380,6 @@ if __name__ == "__main__":
                 rf'FRFs de Transferência'])
     plt.grid(True)	
     plt.show()
->>>>>>> 497c077 (c'est finni)
+
+
 # %%
