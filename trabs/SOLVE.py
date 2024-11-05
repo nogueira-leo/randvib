@@ -4,7 +4,6 @@ from pypardiso.pardiso_wrapper import PyPardisoSolver
 from scipy.sparse import triu, csr_matrix
 import time
 
-" Olavo M Silva 2024 MOPT"
 
 def modal_analysis(K=[], M=[], modes=20, which='LM', sigma=0.01, normalize=True):
     """
